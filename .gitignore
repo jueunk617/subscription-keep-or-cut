@@ -1,0 +1,20 @@
+# Dependency directories
+node_modules/
+
+# IDE files (IntelliJ, VS Code 등)
+.idea/
+.vscode/
+*.swp
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables (비밀번호, API 키 등)
+.env
+.env.local
+.env.*.local
+
+# Husky
+.husky/_/
