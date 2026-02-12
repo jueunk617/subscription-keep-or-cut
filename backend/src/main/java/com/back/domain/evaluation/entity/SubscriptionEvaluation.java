@@ -11,7 +11,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "subscription_evaluation")
+@Table(
+        name = "subscription_evaluation",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"subscription_id", "eval_year", "eval_month"})
+        }
+)
 public class SubscriptionEvaluation {
 
     @Id
@@ -22,7 +27,10 @@ public class SubscriptionEvaluation {
     @JoinColumn(name = "subscription_id", nullable = false)
     private Subscription subscription;
 
+    @Column(name = "eval_year")
     private int year;
+
+    @Column(name = "eval_month")
     private int month;
 
     private double efficiencyRate;
