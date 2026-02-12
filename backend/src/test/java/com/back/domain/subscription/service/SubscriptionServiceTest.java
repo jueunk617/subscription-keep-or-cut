@@ -1,6 +1,7 @@
 package com.back.domain.subscription.service;
 
 import com.back.domain.category.entity.Category;
+import com.back.domain.category.enums.CategoryType;
 import com.back.domain.category.enums.UsageUnit;
 import com.back.domain.category.repository.CategoryRepository;
 import com.back.domain.subscription.dto.SubscriptionRequest;
@@ -21,9 +22,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -41,7 +44,13 @@ class SubscriptionServiceTest {
     @DisplayName("구독 정상 생성")
     void t1() {
         // given
-        Category category = new Category("OTT", 1, UsageUnit.DAYS);
+        Category category = new Category(
+                "OTT",
+                1,
+                UsageUnit.DAYS,
+                CategoryType.CONTENT
+        );
+
         ReflectionTestUtils.setField(category, "id", 1L);
 
         SubscriptionRequest request = new SubscriptionRequest(
@@ -80,7 +89,13 @@ class SubscriptionServiceTest {
     @DisplayName("연간 결제의 경우")
     void t2() {
         // given
-        Category category = new Category("OTT", 1, UsageUnit.DAYS);
+        Category category = new Category(
+                "OTT",
+                1,
+                UsageUnit.DAYS,
+                CategoryType.CONTENT
+        );
+
         ReflectionTestUtils.setField(category, "id", 1L);
 
         SubscriptionRequest request = new SubscriptionRequest(
