@@ -1,5 +1,6 @@
 package com.back.domain.usage.service;
 
+import com.back.domain.category.enums.CategoryType;
 import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.evaluation.enums.EvaluationStatus;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
@@ -24,26 +25,32 @@ public class UsageService {
 
     @Transactional
     public void recordUsageAndEvaluate(UsageRequest request) {
-        // 1. 구독 정보 조회
+
+        // 1. 구독 조회
         Subscription sub = subscriptionRepository.findById(request.subscriptionId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        // 2. 사용량 저장 (Upsert: 존재하면 업데이트, 없으면 생성)
-        SubscriptionUsage usage = usageRepository.findBySubscriptionAndYearAndMonth(sub, request.year(), request.month())
+        // 2. 사용량 Upsert
+        SubscriptionUsage usage = usageRepository
+                .findBySubscriptionAndYearAndMonth(sub, request.year(), request.month())
                 .map(existing -> {
-                    existing.updateValue(request.usageValue()); // 값을 실제로 바꿔줘야 함
+                    existing.updateValue(request.usageValue());
                     return existing;
                 })
-                .orElseGet(() -> usageRepository.save(new SubscriptionUsage(sub, request.year(), request.month(), request.usageValue())));
+                .orElseGet(() ->
+                        new SubscriptionUsage(sub, request.year(), request.month(), request.usageValue())
+                );
 
         usageRepository.save(usage);
 
-        // 3. 평가 로직 계산
-        double efficiencyRate = (double) request.usageValue() / sub.getCategory().getReferenceValue() * 100;
+        // 3. 효율 계산 (카테고리 타입 반영)
+        double efficiencyRate = calculateEfficiency(sub, request.usageValue());
+
+        // 4. 상태 및 낭비 금액 계산
         EvaluationStatus status = calculateStatus(efficiencyRate, request.usageValue());
         int annualWaste = calculateAnnualWaste(sub.getVirtualMonthlyCost(), efficiencyRate);
 
-        // 4. 평가 결과 저장 (Upsert)
+        // 5. 평가 Upsert
         SubscriptionEvaluation evaluation =
                 evaluationRepository.findBySubscriptionAndYearAndMonth(sub, request.year(), request.month())
                         .map(existing -> {
@@ -62,6 +69,32 @@ public class UsageService {
                         );
 
         evaluationRepository.save(evaluation);
+    }
+
+    // 카테고리 타입 기반 효율 계산
+    private double calculateEfficiency(Subscription sub, int usageValue) {
+
+        int referenceValue = sub.getCategory().getReferenceValue();
+
+        if (referenceValue == 0) {
+            return 0;
+        }
+
+        double rate = (double) usageValue / referenceValue * 100;
+
+        CategoryType type = sub.getCategory().getType();
+
+        if (type == CategoryType.CONTENT) {
+            // 콘텐츠형은 초과 사용도 그대로 반영
+            return rate;
+        }
+
+        if (type == CategoryType.PRODUCTIVITY) {
+            // 생산성형은 100% 이상은 의미 축소
+            return Math.min(rate, 100);
+        }
+
+        return rate;
     }
 
     private EvaluationStatus calculateStatus(double rate, int value) {
