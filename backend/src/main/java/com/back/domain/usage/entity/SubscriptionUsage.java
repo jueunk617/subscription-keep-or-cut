@@ -40,4 +40,8 @@ public class SubscriptionUsage {
         this.month = month;
         this.usageValue = usageValue;
     }
+
+    public void updateValue(int usageValue) {
+        this.usageValue = usageValue;
+    }
 }
