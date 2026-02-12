@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "subscription_evaluation",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"subscription_id", "year", "month"})
+                @UniqueConstraint(columnNames = {"subscription_id", "eval_year", "eval_month"})
         }
 )
 public class SubscriptionEvaluation {
@@ -27,10 +27,10 @@ public class SubscriptionEvaluation {
     @JoinColumn(name = "subscription_id", nullable = false)
     private Subscription subscription;
 
-    @Column(nullable = false)
+    @Column(name = "eval_year", nullable = false)
     private int year;
 
-    @Column(nullable = false)
+    @Column(name = "eval_month", nullable = false)
     private int month;
 
     // 효율 비율

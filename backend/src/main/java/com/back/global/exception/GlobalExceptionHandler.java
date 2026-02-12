@@ -39,4 +39,8 @@ public class GlobalExceptionHandler {
                 .status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
                 .body(RsData.fail(ErrorCode.INTERNAL_SERVER_ERROR));
     }
+
+    // 파비콘 등을 찾지 못할 때는 그냥 아무것도 안 하고 넘어가게 함 (로그 클리닝)
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public void handleNoResourceFoundException() { }
 }

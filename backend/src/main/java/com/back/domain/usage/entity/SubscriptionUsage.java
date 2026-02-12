@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "subscription_usage",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"subscription_id", "year", "month"})
+                @UniqueConstraint(columnNames = {"subscription_id", "usage_year", "usage_month"})
         }
 )
 public class SubscriptionUsage {
@@ -25,10 +25,10 @@ public class SubscriptionUsage {
     @JoinColumn(name = "subscription_id", nullable = false)
     private Subscription subscription;
 
-    @Column(nullable = false)
+    @Column(name = "usage_year", nullable = false)
     private int year;
 
-    @Column(nullable = false)
+    @Column(name = "usage_month", nullable = false)
     private int month;
 
     @Column(nullable = false)
