@@ -68,12 +68,12 @@ class DashboardServiceTest {
         ReflectionTestUtils.setField(eval2, "status", EvaluationStatus.EFFICIENT);
         ReflectionTestUtils.setField(eval2, "annualWaste", 0);
 
-        given(evaluationRepository.findAllByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
                 .willReturn(List.of(eval1, eval2));
 
         // 월 지출 합계는 등록된 모든 구독 기준
-        given(subscriptionRepository.findAll())
-                .willReturn(List.of(netflix, chatgpt));
+        given(subscriptionRepository.sumVirtualMonthlyCost())
+                .willReturn(17000 + 29000);
 
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
@@ -103,11 +103,11 @@ class DashboardServiceTest {
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
         Subscription netflix = new Subscription(ott, "Netflix", 17000, BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
 
-        given(evaluationRepository.findAllByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
                 .willReturn(List.of());
 
-        given(subscriptionRepository.findAll())
-                .willReturn(List.of(netflix));
+        given(subscriptionRepository.sumVirtualMonthlyCost())
+                .willReturn(17000);
 
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);

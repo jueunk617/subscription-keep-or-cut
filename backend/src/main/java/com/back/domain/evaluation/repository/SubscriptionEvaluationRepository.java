@@ -2,6 +2,7 @@ package com.back.domain.evaluation.repository;
 
 import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.subscription.entity.Subscription;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,4 +15,8 @@ public interface SubscriptionEvaluationRepository extends JpaRepository<Subscrip
 
     // 특정 연/월의 모든 평가 데이터 가져오기
     List<SubscriptionEvaluation> findAllByYearAndMonth(int year, int month);
+
+    @EntityGraph(attributePaths = {"subscription", "subscription.category"})
+    List<SubscriptionEvaluation> findAllWithSubscriptionAndCategoryByYearAndMonth(int year, int month);
+
 }

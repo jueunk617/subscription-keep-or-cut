@@ -2,7 +2,6 @@ package com.back.domain.dashboard.service;
 
 import com.back.domain.dashboard.dto.DashboardResponse;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
-import com.back.domain.subscription.entity.Subscription;
 import com.back.domain.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,12 +19,10 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardResponse getMonthlyDashboard(int year, int month) {
         // 1. 해당 월의 모든 평가 데이터 조회
-        var evaluations = evaluationRepository.findAllByYearAndMonth(year, month);
+        var evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month);
 
         // 2. 전체 월 지출액 합계 (등록된 모든 구독 기준)
-        int totalMonthlyCost = subscriptionRepository.findAll().stream()
-                .mapToInt(Subscription::getVirtualMonthlyCost)
-                .sum();
+        int totalMonthlyCost = subscriptionRepository.sumVirtualMonthlyCost();
 
         // 3. 전체 연간 낭비 예상액 합계
         int totalWaste = evaluations.stream()
