@@ -43,13 +43,23 @@ public class UsageService {
         EvaluationStatus status = calculateStatus(efficiencyRate, request.usageValue());
         int annualWaste = calculateAnnualWaste(sub.getVirtualMonthlyCost(), efficiencyRate);
 
-        // 4. 평가 결과 저장
-        SubscriptionEvaluation evaluation = evaluationRepository.findBySubscriptionAndYearAndMonth(sub, request.year(), request.month())
-                .map(e -> {
-                    // 기존 데이터가 있으면 업데이트 로직 수행
-                    return new SubscriptionEvaluation(sub, request.year(), request.month(), efficiencyRate, status, annualWaste);
-                })
-                .orElse(new SubscriptionEvaluation(sub, request.year(), request.month(), efficiencyRate, status, annualWaste));
+        // 4. 평가 결과 저장 (Upsert)
+        SubscriptionEvaluation evaluation =
+                evaluationRepository.findBySubscriptionAndYearAndMonth(sub, request.year(), request.month())
+                        .map(existing -> {
+                            existing.update(efficiencyRate, status, annualWaste);
+                            return existing;
+                        })
+                        .orElseGet(() ->
+                                new SubscriptionEvaluation(
+                                        sub,
+                                        request.year(),
+                                        request.month(),
+                                        efficiencyRate,
+                                        status,
+                                        annualWaste
+                                )
+                        );
 
         evaluationRepository.save(evaluation);
     }

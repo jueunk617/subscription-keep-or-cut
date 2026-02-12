@@ -58,4 +58,12 @@ public class SubscriptionEvaluation {
         this.evaluationStatus = evaluationStatus;
         this.annualWasteEstimate = annualWasteEstimate;
     }
+
+    public void update(double efficiencyRate,
+                       EvaluationStatus evaluationStatus,
+                       int annualWasteEstimate) {
+        this.efficiencyRate = efficiencyRate;
+        this.evaluationStatus = evaluationStatus;
+        this.annualWasteEstimate = annualWasteEstimate;
+    }
 }
