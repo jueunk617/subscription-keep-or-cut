@@ -63,4 +63,59 @@ class UsageControllerTest {
                 .andExpect(jsonPath("$.code")
                         .value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getCode()));
     }
+
+    @Test
+    @DisplayName("예외 - usageValue가 음수면 BAD_REQUEST")
+    void t3() throws Exception {
+        UsageRequest request = new UsageRequest(1L, 2025, 2, -1);
+
+        mockMvc.perform(post("/api/v1/usages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+
+        then(usageService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST")
+    void t4() throws Exception {
+        UsageRequest request = new UsageRequest(1L, 2025, 13, 10);
+
+        mockMvc.perform(post("/api/v1/usages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+
+        then(usageService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("예외 - subscriptionId가 null이면 BAD_REQUEST")
+    void t5() throws Exception {
+        String invalidJson = """
+                {
+                  "subscriptionId": null,
+                  "year": 2025,
+                  "month": 2,
+                  "usageValue": 10
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/usages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+
+        then(usageService).shouldHaveNoInteractions();
+    }
 }
