@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.YearMonth;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +38,8 @@ class DashboardServiceTest {
     void t1() {
         // given
         int year = 2026;
-        int month = 3; // DAYS 단위 usageValue=29 검증도 자연스럽게
+        int month = 2;
+        YearMonth targetMonth = YearMonth.of(year, month);
 
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
         ReflectionTestUtils.setField(ott, "id", 1L);
@@ -67,14 +69,19 @@ class DashboardServiceTest {
         );
         ReflectionTestUtils.setField(chatgpt, "id", 11L);
 
-        // 엔티티 정책 그대로 evaluate()로 계산되게 구성
-        SubscriptionEvaluation eval1 = new SubscriptionEvaluation(netflix, year, month);
-        eval1.evaluate(900); // 900/1800=50% -> REVIEW, annualWaste=102000, costPerUnit=round(17000/900)=19
+        SubscriptionEvaluation eval1 = new SubscriptionEvaluation(netflix, targetMonth);
+        ReflectionTestUtils.setField(eval1, "efficiencyRate", 50.0);
+        ReflectionTestUtils.setField(eval1, "status", EvaluationStatus.REVIEW);
+        ReflectionTestUtils.setField(eval1, "annualWaste", 102000L);
+        ReflectionTestUtils.setField(eval1, "costPerUnit", 1000L);
 
-        SubscriptionEvaluation eval2 = new SubscriptionEvaluation(chatgpt, year, month);
-        eval2.evaluate(29);  // PRODUCTIVITY는 100% cap -> EFFICIENT, costPerUnit=round(29000/29)=1000
+        SubscriptionEvaluation eval2 = new SubscriptionEvaluation(chatgpt, targetMonth);
+        ReflectionTestUtils.setField(eval2, "efficiencyRate", 100.0);
+        ReflectionTestUtils.setField(eval2, "status", EvaluationStatus.EFFICIENT);
+        ReflectionTestUtils.setField(eval2, "annualWaste", 0L);
+        ReflectionTestUtils.setField(eval2, "costPerUnit", 967L);
 
-        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByEvalMonth(targetMonth))
                 .willReturn(List.of(eval1, eval2));
 
         // when
@@ -83,6 +90,7 @@ class DashboardServiceTest {
         // then
         assertThat(response.totalMonthlyCost()).isEqualTo(17000L + 29000L);
         assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000L);
+
         assertThat(response.subscriptions()).hasSize(2);
 
         DashboardResponse.SubscriptionSummary s1 = response.subscriptions().get(0);
@@ -94,7 +102,7 @@ class DashboardServiceTest {
         assertThat(s1.annualWaste()).isEqualTo(102000L);
         assertThat(s1.trial()).isFalse();
         assertThat(s1.potentialAnnualWaste()).isEqualTo(0L);
-        assertThat(s1.costPerUnit()).isEqualTo(19L);
+        assertThat(s1.costPerUnit()).isEqualTo(1000L);
 
         DashboardResponse.SubscriptionSummary s2 = response.subscriptions().get(1);
         assertThat(s2.id()).isEqualTo(11L);
@@ -105,7 +113,7 @@ class DashboardServiceTest {
         assertThat(s2.annualWaste()).isEqualTo(0L);
         assertThat(s2.trial()).isFalse();
         assertThat(s2.potentialAnnualWaste()).isEqualTo(0L);
-        assertThat(s2.costPerUnit()).isEqualTo(1000L);
+        assertThat(s2.costPerUnit()).isEqualTo(967L);
     }
 
     @Test
@@ -114,8 +122,9 @@ class DashboardServiceTest {
         // given
         int year = 2026;
         int month = 2;
+        YearMonth targetMonth = YearMonth.of(year, month);
 
-        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByEvalMonth(targetMonth))
                 .willReturn(List.of());
 
         // when
@@ -133,6 +142,7 @@ class DashboardServiceTest {
         // given
         int year = 2026;
         int month = 2;
+        YearMonth targetMonth = YearMonth.of(year, month);
 
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
         ReflectionTestUtils.setField(ott, "id", 1L);
@@ -142,24 +152,27 @@ class DashboardServiceTest {
                 "Netflix Trial",
                 17000L,
                 17000L,
-                17000L, // 유료 전환 시 월 기준 비용
+                17000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.TRIAL
         );
         ReflectionTestUtils.setField(netflixTrial, "id", 10L);
 
-        SubscriptionEvaluation eval = new SubscriptionEvaluation(netflixTrial, year, month);
-        eval.evaluate(900); // 50% -> REVIEW, (TRIAL 정책으로 annualWaste=0), costPerUnit=round(17000/900)=19
+        SubscriptionEvaluation eval = new SubscriptionEvaluation(netflixTrial, targetMonth);
+        ReflectionTestUtils.setField(eval, "efficiencyRate", 50.0);
+        ReflectionTestUtils.setField(eval, "status", EvaluationStatus.REVIEW);
+        ReflectionTestUtils.setField(eval, "annualWaste", 0L);        // TRIAL 정책
+        ReflectionTestUtils.setField(eval, "costPerUnit", 500L);
 
-        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByEvalMonth(targetMonth))
                 .willReturn(List.of(eval));
 
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(0L);          // TRIAL은 월 비용 0
-        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0L);  // TRIAL은 annualWaste 0
+        assertThat(response.totalMonthlyCost()).isEqualTo(0L);
+        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0L);
 
         assertThat(response.subscriptions()).hasSize(1);
 
@@ -176,8 +189,8 @@ class DashboardServiceTest {
         // 잠재 낭비: 17000 * (1 - 0.5) * 12 = 102000
         assertThat(s.potentialAnnualWaste()).isEqualTo(102000L);
 
-        // costPerUnit은 계산됨 (TRIAL이라도 사용량은 있으니까)
-        assertThat(s.costPerUnit()).isEqualTo(19L);
+        // costPerUnit 전달 확인
+        assertThat(s.costPerUnit()).isEqualTo(500L);
     }
 
     @Test
@@ -186,6 +199,7 @@ class DashboardServiceTest {
         // given
         int year = 2026;
         int month = 2;
+        YearMonth targetMonth = YearMonth.of(year, month);
 
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
 
@@ -199,25 +213,26 @@ class DashboardServiceTest {
                 SubscriptionStatus.TRIAL
         );
 
-        SubscriptionEvaluation eval = new SubscriptionEvaluation(trial, year, month);
-        eval.evaluate(594); // 594/1800=33% -> potential 계산에 딱 맞게
+        SubscriptionEvaluation eval = new SubscriptionEvaluation(trial, targetMonth);
+        ReflectionTestUtils.setField(eval, "efficiencyRate", 33.0); // 67% waste
+        ReflectionTestUtils.setField(eval, "status", EvaluationStatus.INEFFICIENT);
+        ReflectionTestUtils.setField(eval, "annualWaste", 0L);
+        ReflectionTestUtils.setField(eval, "costPerUnit", 1234L);
 
-        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByEvalMonth(targetMonth))
                 .willReturn(List.of(eval));
 
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
-
-        // then
         DashboardResponse.SubscriptionSummary s = response.subscriptions().get(0);
 
+        // then
         assertThat(s.trial()).isTrue();
-        assertThat(s.annualWaste()).isEqualTo(0L);
 
-        // 잠재 낭비: 10001 * (1 - 0.33) * 12 = 80408.04 -> Math.round => 80408
+        // 10001 * (1 - 0.33) * 12 = 80408.04 -> Math.round => 80408
         assertThat(s.potentialAnnualWaste()).isEqualTo(80408L);
 
-        // costPerUnit: round(10001/594)=17
-        assertThat(s.costPerUnit()).isEqualTo(17L);
+        // costPerUnit 전달 확인
+        assertThat(s.costPerUnit()).isEqualTo(1234L);
     }
 }

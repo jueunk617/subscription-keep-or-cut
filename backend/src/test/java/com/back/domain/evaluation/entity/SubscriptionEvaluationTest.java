@@ -10,6 +10,8 @@ import com.back.domain.subscription.enums.SubscriptionStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.YearMonth;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SubscriptionEvaluationTest {
@@ -57,7 +59,7 @@ class SubscriptionEvaluationTest {
     void t1() {
         Subscription subscription = createNetflixSubscription();
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         evaluation.evaluate(0);
 
@@ -73,7 +75,7 @@ class SubscriptionEvaluationTest {
     void t2() {
         Subscription subscription = createNetflixSubscription();
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         evaluation.evaluate(1200);
 
@@ -90,7 +92,7 @@ class SubscriptionEvaluationTest {
     void t3() {
         Subscription subscription = createNetflixSubscription();
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         evaluation.evaluate(600); // 50%
 
@@ -104,7 +106,7 @@ class SubscriptionEvaluationTest {
     void t4() {
         Subscription subscription = createChatGptSubscription();
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         evaluation.evaluate(30); // 기준 15일 → 200%
 
@@ -120,7 +122,7 @@ class SubscriptionEvaluationTest {
     void t5() {
         Subscription subscription = createChatGptSubscription();
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         evaluation.evaluate(5); // 약 33%
 
@@ -151,7 +153,7 @@ class SubscriptionEvaluationTest {
         );
 
         SubscriptionEvaluation evaluation =
-                new SubscriptionEvaluation(subscription, 2025, 2);
+                new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         // usageValue = 1 → rate = 16.666...%
         evaluation.evaluate(1);

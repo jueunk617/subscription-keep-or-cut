@@ -9,13 +9,15 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.YearMonth;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "subscription_evaluation",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"subscription_id", "eval_year", "eval_month"})
+                @UniqueConstraint(columnNames = {"subscription_id", "eval_month"})
         }
 )
 public class SubscriptionEvaluation {
@@ -28,11 +30,8 @@ public class SubscriptionEvaluation {
     @JoinColumn(name = "subscription_id", nullable = false)
     private Subscription subscription;
 
-    @Column(name = "eval_year", nullable = false)
-    private int year;
-
     @Column(name = "eval_month", nullable = false)
-    private int month;
+    private YearMonth evalMonth;
 
     private double efficiencyRate;
 
@@ -45,10 +44,9 @@ public class SubscriptionEvaluation {
 
     private long costPerUnit;
 
-    public SubscriptionEvaluation(Subscription subscription, int year, int month) {
+    public SubscriptionEvaluation(Subscription subscription, YearMonth evalMonth) {
         this.subscription = subscription;
-        this.year = year;
-        this.month = month;
+        this.evalMonth = evalMonth;
     }
 
     // 사용량 기반 평가 수행

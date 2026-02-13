@@ -5,18 +5,20 @@ import com.back.domain.subscription.entity.Subscription;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionEvaluationRepository extends JpaRepository<SubscriptionEvaluation, Long> {
 
     // 특정 구독의 특정 연/월 평가 찾기 (단일 조회용)
-    Optional<SubscriptionEvaluation> findBySubscriptionAndYearAndMonth(Subscription subscription, int year, int month);
+    Optional<SubscriptionEvaluation> findBySubscriptionAndEvalMonth(Subscription subscription, YearMonth evalMonth);
 
     // 특정 연/월의 모든 평가 데이터 가져오기
-    List<SubscriptionEvaluation> findAllByYearAndMonth(int year, int month);
+    List<SubscriptionEvaluation> findAllByEvalMonth(YearMonth evalMonth);
 
+    // 대시보드용: N+1 문제를 방지하기 위한 EntityGraph 적용 버전
     @EntityGraph(attributePaths = {"subscription", "subscription.category"})
-    List<SubscriptionEvaluation> findAllWithSubscriptionAndCategoryByYearAndMonth(int year, int month);
+    List<SubscriptionEvaluation> findAllWithSubscriptionAndCategoryByEvalMonth(YearMonth evalMonth);
 
 }

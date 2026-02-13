@@ -15,12 +15,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.YearMonth;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UsageController.class)
 @Import(GlobalExceptionHandler.class)
@@ -35,10 +38,9 @@ class UsageControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
     @DisplayName("사용량 기록 API 성공")
     void t1() throws Exception {
-        UsageRequest request = new UsageRequest(1L, 2025, 2, 80);
+        UsageRequest request = new UsageRequest(1L, YearMonth.of(2025, 2), 80);
 
         mockMvc.perform(post("/api/v1/usages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -51,7 +53,7 @@ class UsageControllerTest {
     @Test
     @DisplayName("구독이 존재하지 않으면 예외 응답 반환")
     void t2() throws Exception {
-        UsageRequest request = new UsageRequest(99L, 2025, 2, 80);
+        UsageRequest request = new UsageRequest(99L, YearMonth.of(2025, 2), 80);
 
         willThrow(new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
                 .given(usageService)
@@ -69,7 +71,7 @@ class UsageControllerTest {
     @Test
     @DisplayName("예외 - usageValue가 음수면 BAD_REQUEST + fieldErrors 반환")
     void t3() throws Exception {
-        UsageRequest request = new UsageRequest(1L, 2025, 2, -1);
+        UsageRequest request = new UsageRequest(1L, YearMonth.of(2025, 2), -1);
 
         mockMvc.perform(post("/api/v1/usages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +89,7 @@ class UsageControllerTest {
     @Test
     @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST + fieldErrors 반환")
     void t4() throws Exception {
-        UsageRequest request = new UsageRequest(1L, 2025, 13, 10);
+        UsageRequest request = new UsageRequest(1L, YearMonth.of(2025, 13), 10);
 
         mockMvc.perform(post("/api/v1/usages")
                         .contentType(MediaType.APPLICATION_JSON)

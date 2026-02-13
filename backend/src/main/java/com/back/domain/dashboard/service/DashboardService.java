@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -25,8 +26,10 @@ public class DashboardService {
          * 사용량 미입력 구독은 분석 대상에서 제외한다.
          */
 
+        YearMonth targetMonth = YearMonth.of(year, month);
+
         // 1. 해당 월의 모든 평가 데이터 조회
-        List<SubscriptionEvaluation> evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month);
+        List<SubscriptionEvaluation> evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByEvalMonth(targetMonth);
 
         // 2. 이번 달 평가된 구독의 월 지출 합계
         long totalMonthlyCost = evaluations.stream()
