@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class RsData<T> {
-    private boolean isSuccess;
+    private boolean success;
     private String code;
     private String message;
     private T data;
