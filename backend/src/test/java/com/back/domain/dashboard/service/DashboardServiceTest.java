@@ -10,7 +10,6 @@ import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
 import com.back.domain.subscription.entity.Subscription;
 import com.back.domain.subscription.enums.BillingCycle;
 import com.back.domain.subscription.enums.SubscriptionStatus;
-import com.back.domain.subscription.repository.SubscriptionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +28,6 @@ class DashboardServiceTest {
 
     @Mock
     private SubscriptionEvaluationRepository evaluationRepository;
-
-    @Mock
-    private SubscriptionRepository subscriptionRepository;
 
     @InjectMocks
     private DashboardService dashboardService;
@@ -61,7 +57,7 @@ class DashboardServiceTest {
         SubscriptionEvaluation eval1 = new SubscriptionEvaluation(netflix, year, month);
         ReflectionTestUtils.setField(eval1, "efficiencyRate", 50.0);
         ReflectionTestUtils.setField(eval1, "status", EvaluationStatus.REVIEW);
-        ReflectionTestUtils.setField(eval1, "annualWaste", 102000); // 예시 값
+        ReflectionTestUtils.setField(eval1, "annualWaste", 102000);
 
         SubscriptionEvaluation eval2 = new SubscriptionEvaluation(chatgpt, year, month);
         ReflectionTestUtils.setField(eval2, "efficiencyRate", 100.0);
@@ -71,16 +67,12 @@ class DashboardServiceTest {
         given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
                 .willReturn(List.of(eval1, eval2));
 
-        // 월 지출 합계는 등록된 모든 구독 기준
-        given(subscriptionRepository.sumVirtualMonthlyCost())
-                .willReturn(17000 + 29000);
-
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(17000 + 29000);
-        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000 + 0);
+        assertThat(response.totalMonthlyCost()).isEqualTo(17000 + 29000); // 평가된 구독 기준 합산
+        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000);
 
         assertThat(response.subscriptions()).hasSize(2);
 
@@ -94,26 +86,20 @@ class DashboardServiceTest {
     }
 
     @Test
-    @DisplayName("해당 월 평가 데이터가 없으면 구독 요약은 빈 리스트이고 낭비 합계는 0")
+    @DisplayName("해당 월 평가 데이터가 없으면 월 지출 합계/낭비 합계는 0이고 구독 요약은 빈 리스트")
     void t2() {
         // given
         int year = 2026;
         int month = 2;
 
-        Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
-        Subscription netflix = new Subscription(ott, "Netflix", 17000, BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
-
         given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
                 .willReturn(List.of());
-
-        given(subscriptionRepository.sumVirtualMonthlyCost())
-                .willReturn(17000);
 
         // when
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(17000);
+        assertThat(response.totalMonthlyCost()).isEqualTo(0);           // 평가된 구독이 없으니 0
         assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0);
         assertThat(response.subscriptions()).isEmpty();
     }

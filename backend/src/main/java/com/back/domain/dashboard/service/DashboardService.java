@@ -1,8 +1,9 @@
 package com.back.domain.dashboard.service;
 
 import com.back.domain.dashboard.dto.DashboardResponse;
+import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
-import com.back.domain.subscription.repository.SubscriptionRepository;
+import com.back.domain.subscription.enums.SubscriptionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +15,21 @@ import java.util.List;
 public class DashboardService {
 
     private final SubscriptionEvaluationRepository evaluationRepository;
-    private final SubscriptionRepository subscriptionRepository;
 
     @Transactional(readOnly = true)
     public DashboardResponse getMonthlyDashboard(int year, int month) {
-        // 1. 해당 월의 모든 평가 데이터 조회
-        var evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month);
 
-        // 2. 전체 월 지출액 합계 (등록된 모든 구독 기준)
-        int totalMonthlyCost = subscriptionRepository.sumVirtualMonthlyCost();
+        // 1. 해당 월의 모든 평가 데이터 조회
+        List<SubscriptionEvaluation> evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month);
+
+        // 2. 이번 달 평가된 구독의 월 지출 합계
+        long totalMonthlyCost = evaluations.stream()
+                .mapToLong(e -> {
+                    var s = e.getSubscription();
+                    // TRIAL은 비용 0으로 처리 (MVP 기준)
+                    return s.getStatus() == SubscriptionStatus.TRIAL ? 0L : s.getVirtualMonthlyCost();
+                })
+                .sum();
 
         // 3. 전체 연간 낭비 예상액 합계
         int totalWaste = evaluations.stream()
