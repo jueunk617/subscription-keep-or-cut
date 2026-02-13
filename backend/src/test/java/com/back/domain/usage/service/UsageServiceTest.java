@@ -162,10 +162,10 @@ class UsageServiceTest {
     }
 
     @Test
-    @DisplayName("예외 - 단위가 DAYS인 구독에서 usageValue가 30을 초과하면 예외 발생")
+    @DisplayName("예외 - 단위가 DAYS인 구독에서 usageValue가 해당 월 일수를 초과하면 예외 발생")
     void t4() {
         int year = 2025;
-        int month = 1;
+        int month = 2; // 2025년 2월 = 28일
 
         Category category = new Category("AI_TOOL", 15, UsageUnit.DAYS, CategoryType.PRODUCTIVITY);
 
@@ -177,7 +177,7 @@ class UsageServiceTest {
                 SubscriptionStatus.ACTIVE
         );
 
-        UsageRequest request = new UsageRequest(1L, year, month, 31);
+        UsageRequest request = new UsageRequest(1L, year, month, 29); // 28 초과
 
         given(subscriptionRepository.findById(1L)).willReturn(Optional.of(subscription));
 

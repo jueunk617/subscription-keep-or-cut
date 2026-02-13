@@ -15,6 +15,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.YearMonth;
+
 @Service
 @RequiredArgsConstructor
 public class UsageService {
@@ -30,8 +32,13 @@ public class UsageService {
         Subscription subscription = subscriptionRepository.findById(request.subscriptionId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        // 1-1. UsageUnit 기반 사용량 검증
-        validateUsageValue(subscription.getCategory().getUnit(), request.usageValue());
+        // 1-1. UsageUnit 기반 사용량 검증 (월 입력 정책: 해당 월의 최대 일수/분으로 상한 결정)
+        validateUsageValue(
+                subscription.getCategory().getUnit(),
+                request.year(),
+                request.month(),
+                request.usageValue()
+        );
 
         // 2. 사용량 Upsert (동시성 대응)
         SubscriptionUsage usage = usageRepository.findBySubscriptionAndYearAndMonth(
@@ -93,22 +100,31 @@ public class UsageService {
     }
 
     /**
-     * UsageUnit에 따라 허용 가능한 usageValue 범위 검증
-     * - DAYS: 0 ~ 30 (월 기준 사용 일수)
-     *  * - MINUTES: 0 ~ 43,200 (30일 * 24시간 * 60분)
-     * MVP에서는 "월 단위 입력"을 전제로 상한선을 설정한다.
+     * UsageUnit에 따라 허용 가능한 usageValue 범위 검증 (월 단위 입력 정책)
+     * - DAYS: 0 ~ 해당 월의 최대 일수 (e.g. 2월 28/29, 7월 31)
+     * - MINUTES: 0 ~ (해당 월 최대 일수 * 24 * 60)
      */
-    private void validateUsageValue(UsageUnit unit, int usageValue) {
+    private void validateUsageValue(UsageUnit unit, int year, int month, int usageValue) {
+
         if (usageValue < 0) {
             throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
         }
 
-        if (unit == UsageUnit.DAYS && usageValue > 30) {
-            throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+        YearMonth yearMonth = YearMonth.of(year, month);
+
+        if (unit == UsageUnit.DAYS) {
+            int maxDays = yearMonth.lengthOfMonth();
+            if (usageValue > maxDays) {
+                throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+            }
+            return;
         }
 
-        if (unit == UsageUnit.MINUTES && usageValue > 30 * 24 * 60) {
-            throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+        if (unit == UsageUnit.MINUTES) {
+            int maxMinutes = yearMonth.lengthOfMonth() * 24 * 60;
+            if (usageValue > maxMinutes) {
+                throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+            }
         }
     }
 }

@@ -183,4 +183,39 @@ class DashboardServiceTest {
         // 잠재 낭비: 17000 * (1 - 0.5) * 12 = 102000
         assertThat(s.potentialAnnualWaste()).isEqualTo(102000L);
     }
+
+    @Test
+    @DisplayName("TRIAL 잠재 낭비는 반올림 정책을 따른다")
+    void t4() {
+        int year = 2026;
+        int month = 2;
+
+        Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
+
+        Subscription trial = new Subscription(
+                ott,
+                "Service Trial",
+                10001L,
+                10001L,
+                10001L, // monthlyShareCost (유료 전환 기준)
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.TRIAL
+        );
+
+        SubscriptionEvaluation eval = new SubscriptionEvaluation(trial, year, month);
+        ReflectionTestUtils.setField(eval, "efficiencyRate", 33.0); // 67% waste
+        ReflectionTestUtils.setField(eval, "status", EvaluationStatus.INEFFICIENT);
+        ReflectionTestUtils.setField(eval, "annualWaste", 0L);
+
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+                .willReturn(List.of(eval));
+
+        DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
+
+        DashboardResponse.SubscriptionSummary s = response.subscriptions().get(0);
+
+        // 10001 * (1 - 0.33) * 12 = 80408.04 -> Math.round => 80408
+        assertThat(s.potentialAnnualWaste()).isEqualTo(80408L);
+    }
+
 }

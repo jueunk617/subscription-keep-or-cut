@@ -66,7 +66,7 @@ public class DashboardService {
 
     private long calcPotentialAnnualWaste(long monthlyCost, double rate) {
         if (rate >= 100) return 0L;
-        // TRIAL이어도 유료 전환 시 기준으로 계산되니까 한 달 뒤 위험을 잡아줌
-        return (long) (monthlyCost * (1 - rate / 100) * 12);
+        // TRIAL이어도 유료 전환 시 기준으로 계산되니까 한 달 뒤 위험을 잡아줌 + 반올림 정책 통일
+        return Math.round(monthlyCost * (1 - rate / 100) * 12);
     }
 }
