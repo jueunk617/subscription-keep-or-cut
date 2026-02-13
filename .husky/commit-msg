@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-# commitlint 대신 @commitlint/cli를 사용
-npx --no -- @commitlint/cli --edit "$1"
+# npx를 쓰지 않고, frontend 폴더 내부에 설치된 commitlint를 직접 호출합니다.
+./frontend/node_modules/.bin/commitlint --edit "$1"
