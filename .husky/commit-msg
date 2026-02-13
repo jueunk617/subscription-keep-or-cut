@@ -1,1 +1,5 @@
-npx --no -- commitlint --edit "$1"
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# commitlint 대신 @commitlint/cli를 사용
+npx --no -- @commitlint/cli --edit "$1"
