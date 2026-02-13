@@ -4,6 +4,7 @@ import com.back.domain.subscription.dto.SubscriptionRequest;
 import com.back.domain.subscription.dto.SubscriptionResponse;
 import com.back.domain.subscription.service.SubscriptionService;
 import com.back.global.common.dto.RsData;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class SubscriptionController {
 
     // 구독 등록
     @PostMapping
-    public RsData<SubscriptionResponse> create(@RequestBody SubscriptionRequest request) {
+    public RsData<SubscriptionResponse> create(@Valid @RequestBody SubscriptionRequest request) {
         SubscriptionResponse response = subscriptionService.createSubscription(request);
         return RsData.success("구독이 성공적으로 등록되었습니다.", response);
     }

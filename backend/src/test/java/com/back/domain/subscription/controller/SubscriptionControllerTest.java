@@ -23,7 +23,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -167,4 +167,28 @@ class SubscriptionControllerTest {
 
         verify(subscriptionService).deleteSubscription(1L);
     }
+
+    @Test
+    @DisplayName("예외 발생 - name이 빈 값이면 BAD_REQUEST")
+    void t6() throws Exception {
+        SubscriptionRequest invalidRequest = new SubscriptionRequest(
+                1L,
+                "",   // 빈 이름
+                15000,
+                5000,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
+
+        mockMvc.perform(post("/api/v1/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+
+        verify(subscriptionService, never()).createSubscription(any());
+    }
+
 }
