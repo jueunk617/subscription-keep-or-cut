@@ -33,7 +33,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
         // 2. 결제 주기에 따른 월 환산 사용자 부담금 계산
-        int monthlyShareCost = calculateMonthlyShareCost(request.userShareCost(), request.billingCycle());
+        long monthlyShareCost = calculateMonthlyShareCost(request.userShareCost(), request.billingCycle());
 
         // 3. 엔티티 생성 및 저장 (원본 비용도 함께 저장)
         Subscription subscription = new Subscription(
@@ -84,7 +84,7 @@ public class SubscriptionService {
     }
 
     // 결제 주기에 따른 월 환산 사용자 부담금 계산
-    private int calculateMonthlyShareCost(int userShareCost, BillingCycle cycle) {
+    private long calculateMonthlyShareCost(long userShareCost, BillingCycle cycle) {
         return switch (cycle) {
             case ANNUAL -> userShareCost / 12;
             case QUARTERLY -> userShareCost / 3;

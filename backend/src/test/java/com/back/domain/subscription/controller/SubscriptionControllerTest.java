@@ -50,8 +50,8 @@ class SubscriptionControllerTest {
         SubscriptionRequest request = new SubscriptionRequest(
                 1L,
                 "Netflix",
-                15000,
-                5000,
+                15000L,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -60,7 +60,7 @@ class SubscriptionControllerTest {
                 10L,
                 "OTT",
                 "Netflix",
-                5000,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -91,7 +91,7 @@ class SubscriptionControllerTest {
                 1L,
                 "OTT",
                 "Netflix",
-                5000,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -132,8 +132,8 @@ class SubscriptionControllerTest {
         SubscriptionRequest request = new SubscriptionRequest(
                 99L,
                 "Netflix",
-                15000,
-                5000,
+                15000L,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -177,8 +177,8 @@ class SubscriptionControllerTest {
         SubscriptionRequest invalidRequest = new SubscriptionRequest(
                 1L,
                 "",
-                15000,
-                5000,
+                15000L,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );

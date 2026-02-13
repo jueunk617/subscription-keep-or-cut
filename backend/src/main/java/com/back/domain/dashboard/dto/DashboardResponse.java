@@ -5,7 +5,7 @@ import java.util.List;
 
 public record DashboardResponse(
         long totalMonthlyCost,          // 해당 월 "평가된 구독" 기준 월 환산 사용자 부담금 합계
-        int totalAnnualWasteEstimate,  // 해당 월 평가된 구독 기준 연간 낭비 추정 합계
+        long totalAnnualWasteEstimate,  // 해당 월 평가된 구독 기준 연간 낭비 추정 합계
         List<SubscriptionSummary> subscriptions
 ) {
     public record SubscriptionSummary(
@@ -14,6 +14,6 @@ public record DashboardResponse(
             String name,
             double efficiencyRate,
             EvaluationStatus status,
-            int annualWaste
+            long annualWaste
     ) {}
 }

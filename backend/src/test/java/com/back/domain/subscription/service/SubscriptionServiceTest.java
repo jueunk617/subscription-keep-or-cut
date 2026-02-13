@@ -56,8 +56,8 @@ class SubscriptionServiceTest {
         SubscriptionRequest request = new SubscriptionRequest(
                 1L,
                 "Netflix",
-                15000,
-                5000,
+                15000L,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -78,7 +78,7 @@ class SubscriptionServiceTest {
         // then
         assertThat(response.id()).isEqualTo(10L);
         assertThat(response.name()).isEqualTo("Netflix");
-        assertThat(response.monthlyShareCost()).isEqualTo(5000);
+        assertThat(response.monthlyShareCost()).isEqualTo(5000L);
         assertThat(response.billingCycle()).isEqualTo(BillingCycle.MONTHLY);
         assertThat(response.status()).isEqualTo(SubscriptionStatus.ACTIVE);
 
@@ -101,8 +101,8 @@ class SubscriptionServiceTest {
         SubscriptionRequest request = new SubscriptionRequest(
                 1L,
                 "Netflix",
-                120000,
-                120000,
+                120000L,
+                120000L,
                 BillingCycle.ANNUAL,
                 SubscriptionStatus.ACTIVE
         );
@@ -117,7 +117,7 @@ class SubscriptionServiceTest {
         SubscriptionResponse response = subscriptionService.createSubscription(request);
 
         // then
-        assertThat(response.monthlyShareCost()).isEqualTo(10000);
+        assertThat(response.monthlyShareCost()).isEqualTo(10000L);
     }
 
     @Test
@@ -127,8 +127,8 @@ class SubscriptionServiceTest {
         SubscriptionRequest request = new SubscriptionRequest(
                 99L,
                 "Netflix",
-                15000,
-                5000,
+                15000L,
+                5000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );

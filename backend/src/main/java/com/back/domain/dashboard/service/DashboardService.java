@@ -32,14 +32,13 @@ public class DashboardService {
         long totalMonthlyCost = evaluations.stream()
                 .mapToLong(e -> {
                     var s = e.getSubscription();
-                    // TRIAL은 비용 0으로 처리 (MVP 기준)
                     return s.getStatus() == SubscriptionStatus.TRIAL ? 0L : s.getMonthlyShareCost();
                 })
                 .sum();
 
         // 3. 전체 연간 낭비 예상액 합계
-        int totalWaste = evaluations.stream()
-                .mapToInt(e -> e.getAnnualWaste())
+        long totalWaste = evaluations.stream()
+                .mapToLong(SubscriptionEvaluation::getAnnualWaste)
                 .sum();
 
         // 4. 구독별 요약 리스트 생성

@@ -38,7 +38,7 @@ public class SubscriptionEvaluation {
     @Enumerated(EnumType.STRING)
     private EvaluationStatus status;
 
-    private int annualWaste;
+    private long annualWaste;
 
     public SubscriptionEvaluation(Subscription subscription, int year, int month) {
         this.subscription = subscription;
@@ -51,7 +51,8 @@ public class SubscriptionEvaluation {
 
         int referenceValue = subscription.getCategory().getReferenceValue();
         CategoryType type = subscription.getCategory().getType();
-        int monthlyCost = subscription.getMonthlyShareCost();
+
+        long monthlyCost = subscription.getMonthlyShareCost();
 
         // 1️. 효율 계산
         double rate = 0;
@@ -83,7 +84,7 @@ public class SubscriptionEvaluation {
         if (rate >= 100) {
             this.annualWaste = 0;
         } else {
-            this.annualWaste = (int) (monthlyCost * (1 - rate / 100) * 12);
+            this.annualWaste = (long) (monthlyCost * (1 - rate / 100) * 12);
         }
     }
 

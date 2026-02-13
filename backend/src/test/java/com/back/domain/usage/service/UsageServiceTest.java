@@ -55,9 +55,9 @@ class UsageServiceTest {
         Subscription subscription = new Subscription(
                 category,
                 "Netflix",
-                15000, // totalCost
-                15000, // userShareCost
-                15000, // monthlyShareCost
+                15000L, // totalCost
+                15000L, // userShareCost
+                15000L, // monthlyShareCost
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -99,7 +99,9 @@ class UsageServiceTest {
         Subscription subscription = new Subscription(
                 category,
                 "Netflix",
-                15000, 15000, 15000,
+                15000L,
+                15000L,
+                15000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );

@@ -42,28 +42,40 @@ class DashboardServiceTest {
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
         ReflectionTestUtils.setField(ott, "id", 1L);
 
-        Subscription netflix = new Subscription(ott, "Netflix",
-                17000, 17000, 17000,
-                BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
+        Subscription netflix = new Subscription(
+                ott,
+                "Netflix",
+                17000L,
+                17000L,
+                17000L,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
         ReflectionTestUtils.setField(netflix, "id", 10L);
 
         Category aiTool = new Category("AI_TOOL", 12, UsageUnit.DAYS, CategoryType.PRODUCTIVITY);
         ReflectionTestUtils.setField(aiTool, "id", 2L);
 
-        Subscription chatgpt = new Subscription(aiTool, "ChatGPT Plus",
-                29000, 29000, 29000,
-                BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
+        Subscription chatgpt = new Subscription(
+                aiTool,
+                "ChatGPT Plus",
+                29000L,
+                29000L,
+                29000L,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
         ReflectionTestUtils.setField(chatgpt, "id", 11L);
 
         SubscriptionEvaluation eval1 = new SubscriptionEvaluation(netflix, year, month);
         ReflectionTestUtils.setField(eval1, "efficiencyRate", 50.0);
         ReflectionTestUtils.setField(eval1, "status", EvaluationStatus.REVIEW);
-        ReflectionTestUtils.setField(eval1, "annualWaste", 102000);
+        ReflectionTestUtils.setField(eval1, "annualWaste", 102000L);
 
         SubscriptionEvaluation eval2 = new SubscriptionEvaluation(chatgpt, year, month);
         ReflectionTestUtils.setField(eval2, "efficiencyRate", 100.0);
         ReflectionTestUtils.setField(eval2, "status", EvaluationStatus.EFFICIENT);
-        ReflectionTestUtils.setField(eval2, "annualWaste", 0);
+        ReflectionTestUtils.setField(eval2, "annualWaste", 0L);
 
         given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
                 .willReturn(List.of(eval1, eval2));
@@ -72,8 +84,8 @@ class DashboardServiceTest {
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(17000 + 29000);
-        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000);
+        assertThat(response.totalMonthlyCost()).isEqualTo(17000L + 29000L);
+        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000L);
 
         assertThat(response.subscriptions()).hasSize(2);
 
@@ -83,7 +95,7 @@ class DashboardServiceTest {
         assertThat(s1.name()).isEqualTo("Netflix");
         assertThat(s1.efficiencyRate()).isEqualTo(50.0);
         assertThat(s1.status()).isEqualTo(EvaluationStatus.REVIEW);
-        assertThat(s1.annualWaste()).isEqualTo(102000);
+        assertThat(s1.annualWaste()).isEqualTo(102000L);
     }
 
     @Test
@@ -100,8 +112,8 @@ class DashboardServiceTest {
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(0);
-        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0);
+        assertThat(response.totalMonthlyCost()).isEqualTo(0L);
+        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0L);
         assertThat(response.subscriptions()).isEmpty();
     }
 }

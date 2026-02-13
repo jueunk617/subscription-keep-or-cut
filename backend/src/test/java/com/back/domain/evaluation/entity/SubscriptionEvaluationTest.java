@@ -25,9 +25,9 @@ class SubscriptionEvaluationTest {
         return new Subscription(
                 ott,
                 "Netflix",
-                17000, // totalCost
-                17000, // userShareCost
-                17000, // monthlyShareCost
+                17000L, // totalCost
+                17000L, // userShareCost
+                17000L, // monthlyShareCost
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -44,9 +44,9 @@ class SubscriptionEvaluationTest {
         return new Subscription(
                 aiTool,
                 "ChatGPT Plus",
-                29000,
-                29000,
-                29000,
+                29000L,
+                29000L,
+                29000L,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -62,7 +62,7 @@ class SubscriptionEvaluationTest {
         evaluation.evaluate(0);
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.GHOST);
-        assertThat(evaluation.getAnnualWaste()).isEqualTo(17000 * 12);
+        assertThat(evaluation.getAnnualWaste()).isEqualTo(17000L * 12);
     }
 
     @Test
@@ -76,7 +76,7 @@ class SubscriptionEvaluationTest {
 
         assertThat(evaluation.getEfficiencyRate()).isEqualTo(100.0);
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.EFFICIENT);
-        assertThat(evaluation.getAnnualWaste()).isEqualTo(0);
+        assertThat(evaluation.getAnnualWaste()).isEqualTo(0L);
     }
 
     @Test

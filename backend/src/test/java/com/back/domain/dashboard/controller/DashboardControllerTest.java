@@ -39,8 +39,8 @@ class DashboardControllerTest {
         int month = 2;
 
         DashboardResponse response = new DashboardResponse(
-                46000,
-                102000,
+                46000L,
+                102000L,
                 List.of(
                         new DashboardResponse.SubscriptionSummary(
                                 10L,
@@ -48,7 +48,7 @@ class DashboardControllerTest {
                                 "Netflix",
                                 50.0,
                                 EvaluationStatus.REVIEW,
-                                102000
+                                102000L
                         )
                 )
         );

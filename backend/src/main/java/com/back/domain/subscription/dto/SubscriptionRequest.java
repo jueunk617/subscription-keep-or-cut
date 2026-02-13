@@ -15,10 +15,10 @@ public record SubscriptionRequest(
         String name,
 
         @Min(value = 0, message = "총 비용은 0 이상이어야 합니다.")
-        int totalCost,
+        long totalCost,
 
         @Min(value = 0, message = "사용자 부담 금액은 0 이상이어야 합니다.")
-        int userShareCost,
+        long userShareCost,
 
         @NotNull(message = "결제 주기는 필수입니다.")
         BillingCycle billingCycle,
