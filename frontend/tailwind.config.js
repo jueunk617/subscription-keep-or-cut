@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
+      './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+      './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+      './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+      // 혹시 루트에 바로 존재하는 경우까지 커버
       './pages/**/*.{js,ts,jsx,tsx,mdx}',
       './components/**/*.{js,ts,jsx,tsx,mdx}',
       './app/**/*.{js,ts,jsx,tsx,mdx}',
@@ -33,11 +37,14 @@ module.exports = {
             600: '#ca8a04',
           },
           danger: {
-            50: '#fef2f2',
-            100: '#fee2e2',
-            500: '#ef4444',
-            600: '#dc2626',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
           },
+          // 전역 border 색상 토큰 (border-border 유틸리티용)
+          border: '#e5e7eb',
         },
         animation: {
           'slide-in': 'slideIn 0.3s ease-out',

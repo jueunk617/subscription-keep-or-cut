@@ -1,12 +1,17 @@
 package com.back.domain.subscription.entity;
 
 import com.back.domain.category.entity.Category;
+import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.subscription.enums.BillingCycle;
 import com.back.domain.subscription.enums.SubscriptionStatus;
+import com.back.domain.usage.entity.SubscriptionUsage;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -48,6 +53,12 @@ public class Subscription {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SubscriptionStatus status;
+
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SubscriptionUsage> usages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SubscriptionEvaluation> evaluations = new ArrayList<>();
 
     public Subscription(Category category,
                         String name,

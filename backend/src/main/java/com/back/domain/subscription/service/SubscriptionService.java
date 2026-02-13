@@ -2,11 +2,13 @@ package com.back.domain.subscription.service;
 
 import com.back.domain.category.entity.Category;
 import com.back.domain.category.repository.CategoryRepository;
+import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
 import com.back.domain.subscription.dto.SubscriptionRequest;
 import com.back.domain.subscription.dto.SubscriptionResponse;
 import com.back.domain.subscription.entity.Subscription;
 import com.back.domain.subscription.enums.BillingCycle;
 import com.back.domain.subscription.repository.SubscriptionRepository;
+import com.back.domain.usage.repository.SubscriptionUsageRepository;
 import com.back.global.exception.CustomException;
 import com.back.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
+    private final SubscriptionUsageRepository subscriptionUsageRepository;
+    private final SubscriptionEvaluationRepository subscriptionEvaluationRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final CategoryRepository categoryRepository;
 
@@ -64,12 +68,18 @@ public class SubscriptionService {
      * 특정 구독 정보를 삭제합니다.
      */
     @Transactional
-    public void deleteSubscription(Long id) {
-        if (!subscriptionRepository.existsById(id)) {
+    public void deleteSubscription(Long subscriptionId) {
+
+        if (!subscriptionRepository.existsById(subscriptionId)) {
             throw new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND);
         }
-        subscriptionRepository.deleteById(id);
+
+        subscriptionUsageRepository.deleteAllBySubscriptionId(subscriptionId);
+        subscriptionEvaluationRepository.deleteAllBySubscriptionId(subscriptionId);
+
+        subscriptionRepository.deleteById(subscriptionId);
     }
+
 
     // 엔티티 -> Response Record 변환
     private SubscriptionResponse toResponse(Subscription s) {

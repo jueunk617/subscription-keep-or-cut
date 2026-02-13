@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trash2, Edit3, AlertTriangle, Sparkles } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { SubscriptionSummary } from '@/src/types/api';
 import { subscriptionApi } from '@/src/lib/api';
 import {
@@ -24,11 +24,15 @@ export default function SubscriptionCard({
   onDelete,
 }: SubscriptionCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
     mutationFn: () => subscriptionApi.delete(subscription.id),
     onSuccess: () => {
       onDelete();
+      // 대시보드/전체 구독 목록 모두 갱신
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
     },
   });
 

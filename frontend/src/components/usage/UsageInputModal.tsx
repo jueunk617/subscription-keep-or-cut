@@ -5,8 +5,10 @@ import { usageApi } from '@/src/lib/api';
 import type { SubscriptionSummary } from '@/src/types/api';
 import { getCategoryLabel, formatYearMonth } from '@/src/lib/utils';
 
+type UsageSubscription = Pick<SubscriptionSummary, 'id' | 'name' | 'categoryName'>;
+
 interface UsageInputModalProps {
-  subscription: SubscriptionSummary;
+  subscription: UsageSubscription;
   year: number;
   month: number;
   onClose: () => void;
@@ -107,8 +109,8 @@ export default function UsageInputModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full animate-slide-in">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full animate-slide-in">
         {/* 헤더 */}
         <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <div>
