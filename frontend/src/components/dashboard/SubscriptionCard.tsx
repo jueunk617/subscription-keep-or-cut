@@ -9,6 +9,7 @@ import {
   getStatusLabel,
   getStatusDescription,
   getCategoryLabel,
+  getCategoryUnitLabel,
   getEfficiencyColor,
 } from '@/src/lib/utils';
 
@@ -43,6 +44,7 @@ export default function SubscriptionCard({
 
   const statusColor = getStatusColor(subscription.status);
   const efficiencyColor = getEfficiencyColor(subscription.efficiencyRate);
+  const unitLabel = getCategoryUnitLabel(subscription.categoryName);
 
   return (
     <div className="card hover:shadow-md transition-shadow">
@@ -115,7 +117,7 @@ export default function SubscriptionCard({
         {/* 통계 정보 */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
           <div>
-            <p className="text-xs text-gray-500 mb-1">단위당 비용</p>
+            <p className="text-xs text-gray-500 mb-1">단위({unitLabel})당 비용</p>
             <p className="text-sm font-semibold text-gray-900">
               {formatCurrency(subscription.costPerUnit)}
             </p>

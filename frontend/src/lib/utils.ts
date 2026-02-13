@@ -80,6 +80,12 @@ export function getUnitLabel(unit: UsageUnit): string {
   return unit === 'MINUTES' ? '분' : '일';
 }
 
+// 카테고리명으로부터 사용 단위(분/일) 추론
+export function getCategoryUnitLabel(categoryName: string): string {
+  const contentCategories = ['OTT', 'MUSIC', 'EBOOK'];
+  return contentCategories.includes(categoryName) ? '분' : '일';
+}
+
 // 효율 점수에 따른 그래프 색상
 export function getEfficiencyColor(rate: number): string {
   if (rate >= 100) return '#22c55e'; // success-500
