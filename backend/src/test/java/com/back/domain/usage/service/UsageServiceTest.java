@@ -215,28 +215,45 @@ class UsageServiceTest {
         given(subscriptionRepository.findById(1L))
                 .willReturn(Optional.of(subscription));
 
-        // 최초 조회 시 사용량 없음
+        // 최초 조회: 없음 -> try에서 insert 시도
+        // 예외 후 재조회: 존재 -> update 후 save()로 마무리
+        SubscriptionUsage existing = new SubscriptionUsage(subscription, year, month, 5);
+
         given(usageRepository.findBySubscriptionAndYearAndMonth(subscription, year, month))
-                .willReturn(Optional.empty())   // try 블록 진입
-                .willReturn(Optional.of(new SubscriptionUsage(subscription, year, month, 5))); // catch 후 재조회
+                .willReturn(Optional.empty())
+                .willReturn(Optional.of(existing));
 
-        // saveAndFlush에서 유니크 충돌 발생
+        // saveAndFlush에서 유니크 충돌 발생 (동시 insert 가정)
         given(usageRepository.saveAndFlush(any(SubscriptionUsage.class)))
-                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"))
-                .willAnswer(invocation -> invocation.getArgument(0)); // catch 이후 정상 저장
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
 
-        // evaluation은 단순 정상 흐름
+        // catch에서는 save() 호출로 마무리되므로 save()는 정상 동작하도록
+        given(usageRepository.save(any(SubscriptionUsage.class)))
+                .willAnswer(inv -> inv.getArgument(0));
+
+        // evaluation은 정상 흐름
         given(evaluationRepository.findBySubscriptionAndYearAndMonth(subscription, year, month))
                 .willReturn(Optional.empty());
 
         given(evaluationRepository.saveAndFlush(any(SubscriptionEvaluation.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
+                .willAnswer(inv -> inv.getArgument(0));
 
         // when
         usageService.recordUsageAndEvaluate(request);
 
         // then
-        verify(usageRepository).save(any(SubscriptionUsage.class));
-        verify(usageRepository).saveAndFlush(any(SubscriptionUsage.class));
+        // 1) saveAndFlush는 1번 시도하다가 예외로 빠짐
+        verify(usageRepository, times(1)).saveAndFlush(any(SubscriptionUsage.class));
+
+        // 2) 예외 후 재조회가 2번 호출됨 (처음 + catch에서 재조회)
+        verify(usageRepository, times(2))
+                .findBySubscriptionAndYearAndMonth(subscription, year, month);
+
+        // 3) catch에서 update 후 save로 마무리
+        verify(usageRepository, times(1)).save(existing);
+
+        assertEquals(100, existing.getUsageValue());
+
+        verify(evaluationRepository, times(1)).saveAndFlush(any(SubscriptionEvaluation.class));
     }
 }
