@@ -168,4 +168,32 @@ class SubscriptionServiceTest {
         // then
         verify(subscriptionRepository).deleteById(1L);
     }
+
+    @Test
+    @DisplayName("연간 결제 월 환산은 반올림 처리한다")
+    void t6() {
+        Category category = new Category("OTT", 1, UsageUnit.DAYS, CategoryType.CONTENT);
+        ReflectionTestUtils.setField(category, "id", 1L);
+
+        SubscriptionRequest request = new SubscriptionRequest(
+                1L,
+                "Netflix",
+                10001L,   // annual userShareCost
+                10001L,
+                BillingCycle.ANNUAL,
+                SubscriptionStatus.ACTIVE
+        );
+
+        given(categoryRepository.findById(1L)).willReturn(Optional.of(category));
+        given(subscriptionRepository.save(any(Subscription.class))).willAnswer(inv -> {
+            Subscription s = inv.getArgument(0);
+            ReflectionTestUtils.setField(s, "id", 10L);
+            return s;
+        });
+
+        SubscriptionResponse response = subscriptionService.createSubscription(request);
+
+        // 10001 / 12 = 833.416... -> 833
+        assertThat(response.monthlyShareCost()).isEqualTo(833L);
+    }
 }

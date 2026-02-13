@@ -91,7 +91,8 @@ public class SubscriptionEvaluation {
         if (rate >= 100) {
             this.annualWaste = 0;
         } else {
-            this.annualWaste = (long) (monthlyCost * (1 - rate / 100) * 12);
+            // 계산 정책 통일 = 원 단위 대표값 산출을 위해 반올림 적용
+            this.annualWaste = Math.round(monthlyCost * (1 - rate / 100) * 12);
         }
     }
 

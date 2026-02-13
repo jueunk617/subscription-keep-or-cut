@@ -86,8 +86,8 @@ public class SubscriptionService {
     // 결제 주기에 따른 월 환산 사용자 부담금 계산
     private long calculateMonthlyShareCost(long userShareCost, BillingCycle cycle) {
         return switch (cycle) {
-            case ANNUAL -> userShareCost / 12;
-            case QUARTERLY -> userShareCost / 3;
+            case ANNUAL -> Math.round(userShareCost / 12.0);
+            case QUARTERLY -> Math.round(userShareCost / 3.0);
             case MONTHLY -> userShareCost;
         };
     }

@@ -115,4 +115,35 @@ class SubscriptionEvaluationTest {
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.INEFFICIENT);
     }
+
+    @Test
+    @DisplayName("계산 정책 검증 - annualWaste는 소수점 발생 시 반올림 처리된다")
+    void t6() {
+        Category category = new Category(
+                "OTT",
+                6, // 기준값
+                UsageUnit.MINUTES,
+                CategoryType.CONTENT
+        );
+
+        Subscription subscription = new Subscription(
+                category,
+                "TestService",
+                1000L,
+                1000L,
+                1000L,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
+
+        SubscriptionEvaluation evaluation =
+                new SubscriptionEvaluation(subscription, 2025, 2);
+
+        // usageValue = 1 → rate = 16.666...%
+        evaluation.evaluate(1);
+
+        // 기대값: 10000 (반올림)
+        assertThat(evaluation.getAnnualWaste()).isEqualTo(10000L);
+    }
+
 }
