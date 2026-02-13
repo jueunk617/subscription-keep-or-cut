@@ -188,4 +188,55 @@ class UsageServiceTest {
         verify(usageRepository, never()).save(any());
         verify(evaluationRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("동시성 상황 - 사용량 저장 중 유니크 충돌 발생 시 재조회 후 update 처리")
+    void t5() {
+        // given
+        int year = 2025;
+        int month = 3;
+
+        Category category = mock(Category.class);
+        given(category.getUnit()).willReturn(UsageUnit.MINUTES);
+
+        Subscription subscription = new Subscription(
+                category,
+                "Netflix",
+                15000L,
+                15000L,
+                15000L,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
+
+        UsageRequest request = new UsageRequest(1L, year, month, 100);
+
+        // 구독 존재
+        given(subscriptionRepository.findById(1L))
+                .willReturn(Optional.of(subscription));
+
+        // 최초 조회 시 사용량 없음
+        given(usageRepository.findBySubscriptionAndYearAndMonth(subscription, year, month))
+                .willReturn(Optional.empty())   // try 블록 진입
+                .willReturn(Optional.of(new SubscriptionUsage(subscription, year, month, 5))); // catch 후 재조회
+
+        // saveAndFlush에서 유니크 충돌 발생
+        given(usageRepository.saveAndFlush(any(SubscriptionUsage.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"))
+                .willAnswer(invocation -> invocation.getArgument(0)); // catch 이후 정상 저장
+
+        // evaluation은 단순 정상 흐름
+        given(evaluationRepository.findBySubscriptionAndYearAndMonth(subscription, year, month))
+                .willReturn(Optional.empty());
+
+        given(evaluationRepository.saveAndFlush(any(SubscriptionEvaluation.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        usageService.recordUsageAndEvaluate(request);
+
+        // then
+        verify(usageRepository).save(any(SubscriptionUsage.class));
+        verify(usageRepository).saveAndFlush(any(SubscriptionUsage.class));
+    }
 }
