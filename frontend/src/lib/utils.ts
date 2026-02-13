@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { EvaluationStatus, BillingCycle, CategoryType, UsageUnit } from '@/types/api';
+import type { EvaluationStatus, BillingCycle, CategoryType, UsageUnit } from '@/src/types/api';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

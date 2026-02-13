@@ -7,7 +7,7 @@ import type {
   CreateSubscriptionRequest,
   UsageRequest,
   Category
-} from '@/types/api';
+} from '@/src/types/api';
 
 const api = axios.create({
   baseURL: '/api/v1',
