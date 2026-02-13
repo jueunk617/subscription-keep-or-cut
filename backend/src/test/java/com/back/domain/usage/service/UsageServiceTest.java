@@ -1,6 +1,8 @@
 package com.back.domain.usage.service;
 
 import com.back.domain.category.entity.Category;
+import com.back.domain.category.enums.CategoryType;
+import com.back.domain.category.enums.UsageUnit;
 import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
 import com.back.domain.subscription.entity.Subscription;
@@ -23,10 +25,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UsageServiceTest {
@@ -51,6 +52,7 @@ class UsageServiceTest {
         int month = 1;
 
         Category category = mock(Category.class);
+        given(category.getUnit()).willReturn(UsageUnit.MINUTES);
 
         Subscription subscription = new Subscription(
                 category,
@@ -95,6 +97,7 @@ class UsageServiceTest {
         int month = 1;
 
         Category category = mock(Category.class);
+        given(category.getUnit()).willReturn(UsageUnit.MINUTES);
 
         Subscription subscription = new Subscription(
                 category,
@@ -151,6 +154,34 @@ class UsageServiceTest {
         // when & then
         assertThrows(CustomException.class,
                 () -> usageService.recordUsageAndEvaluate(request));
+
+        verify(usageRepository, never()).saveAndFlush(any());
+        verify(evaluationRepository, never()).saveAndFlush(any());
+        verify(usageRepository, never()).save(any());
+        verify(evaluationRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("예외 - 단위가 DAYS인 구독에서 usageValue가 30을 초과하면 예외 발생")
+    void t4() {
+        int year = 2025;
+        int month = 1;
+
+        Category category = new Category("AI_TOOL", 15, UsageUnit.DAYS, CategoryType.PRODUCTIVITY);
+
+        Subscription subscription = new Subscription(
+                category,
+                "ChatGPT Plus",
+                29000L, 29000L, 29000L,
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.ACTIVE
+        );
+
+        UsageRequest request = new UsageRequest(1L, year, month, 31);
+
+        given(subscriptionRepository.findById(1L)).willReturn(Optional.of(subscription));
+
+        assertThrows(CustomException.class, () -> usageService.recordUsageAndEvaluate(request));
 
         verify(usageRepository, never()).saveAndFlush(any());
         verify(evaluationRepository, never()).saveAndFlush(any());

@@ -1,5 +1,6 @@
 package com.back.domain.usage.service;
 
+import com.back.domain.category.enums.UsageUnit;
 import com.back.domain.evaluation.entity.SubscriptionEvaluation;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
 import com.back.domain.subscription.entity.Subscription;
@@ -28,6 +29,9 @@ public class UsageService {
         // 1. 구독 조회
         Subscription subscription = subscriptionRepository.findById(request.subscriptionId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
+        // 1-1. UsageUnit 기반 사용량 검증
+        validateUsageValue(subscription.getCategory().getUnit(), request.usageValue());
 
         // 2. 사용량 Upsert (동시성 대응)
         SubscriptionUsage usage = usageRepository.findBySubscriptionAndYearAndMonth(
@@ -85,6 +89,26 @@ public class UsageService {
 
             existing.update(request.usageValue());
             evaluationRepository.save(existing);
+        }
+    }
+
+    /**
+     * UsageUnit에 따라 허용 가능한 usageValue 범위 검증
+     * - DAYS: 0 ~ 30 (월 기준 사용 일수)
+     *  * - MINUTES: 0 ~ 43,200 (30일 * 24시간 * 60분)
+     * MVP에서는 "월 단위 입력"을 전제로 상한선을 설정한다.
+     */
+    private void validateUsageValue(UsageUnit unit, int usageValue) {
+        if (usageValue < 0) {
+            throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+        }
+
+        if (unit == UsageUnit.DAYS && usageValue > 30) {
+            throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
+        }
+
+        if (unit == UsageUnit.MINUTES && usageValue > 30 * 24 * 60) {
+            throw new CustomException(ErrorCode.INVALID_USAGE_VALUE);
         }
     }
 }
