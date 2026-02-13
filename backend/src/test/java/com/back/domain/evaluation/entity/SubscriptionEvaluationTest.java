@@ -4,6 +4,8 @@ import com.back.domain.category.entity.Category;
 import com.back.domain.category.enums.CategoryType;
 import com.back.domain.category.enums.UsageUnit;
 import com.back.domain.evaluation.enums.EvaluationStatus;
+import com.back.domain.evaluation.policy.DefaultEvaluationPolicy;
+import com.back.domain.evaluation.policy.EvaluationPolicy;
 import com.back.domain.subscription.entity.Subscription;
 import com.back.domain.subscription.enums.BillingCycle;
 import com.back.domain.subscription.enums.SubscriptionStatus;
@@ -15,6 +17,8 @@ import java.time.YearMonth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SubscriptionEvaluationTest {
+
+    private final EvaluationPolicy policy = new DefaultEvaluationPolicy();
 
     private Subscription createNetflixSubscription() {
         Category ott = new Category(
@@ -61,7 +65,7 @@ class SubscriptionEvaluationTest {
         SubscriptionEvaluation evaluation =
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
-        evaluation.evaluate(0);
+        evaluation.update(0, policy);
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.GHOST);
         assertThat(evaluation.getAnnualWaste()).isEqualTo(17000L * 12);
@@ -77,14 +81,14 @@ class SubscriptionEvaluationTest {
         SubscriptionEvaluation evaluation =
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
-        evaluation.evaluate(1200);
+        evaluation.update(1200, policy);
 
         assertThat(evaluation.getEfficiencyRate()).isEqualTo(100.0);
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.EFFICIENT);
         assertThat(evaluation.getAnnualWaste()).isEqualTo(0L);
 
         assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(1200);
-        assertThat(evaluation.getCostPerUnit()).isEqualTo(14L);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(14L); // 17000/1200=14.16.. -> 14
     }
 
     @Test
@@ -94,7 +98,7 @@ class SubscriptionEvaluationTest {
         SubscriptionEvaluation evaluation =
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
-        evaluation.evaluate(600); // 50%
+        evaluation.update(600, policy);
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.REVIEW);
         assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(1200);
@@ -108,7 +112,7 @@ class SubscriptionEvaluationTest {
         SubscriptionEvaluation evaluation =
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
-        evaluation.evaluate(30); // 기준 15일 → 200%
+        evaluation.update(30, policy); // 기준 15일 → 200%지만 PRODUCTIVITY는 100 cap
 
         assertThat(evaluation.getEfficiencyRate()).isEqualTo(100.0);
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.EFFICIENT);
@@ -124,12 +128,12 @@ class SubscriptionEvaluationTest {
         SubscriptionEvaluation evaluation =
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
-        evaluation.evaluate(5); // 약 33%
+        evaluation.update(5, policy);
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.INEFFICIENT);
 
         assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(15);
-        assertThat(evaluation.getCostPerUnit()).isEqualTo(5800L); // 29000/5
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(5800L);
     }
 
     @Test
@@ -156,7 +160,7 @@ class SubscriptionEvaluationTest {
                 new SubscriptionEvaluation(subscription, YearMonth.of(2025, 2));
 
         // usageValue = 1 → rate = 16.666...%
-        evaluation.evaluate(1);
+        evaluation.update(1, policy);
 
         // 기대값: 10000 (반올림)
         assertThat(evaluation.getAnnualWaste()).isEqualTo(10000L);

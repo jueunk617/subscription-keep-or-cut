@@ -87,19 +87,25 @@ class UsageControllerTest {
     }
 
     @Test
-    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST + fieldErrors 반환")
+    @DisplayName("예외 - date 형식이 올바르지 않으면 BAD_REQUEST + fieldErrors 반환")
     void t4() throws Exception {
-        UsageRequest request = new UsageRequest(1L, YearMonth.of(2025, 13), 10);
+        String invalidJson = """
+            {
+              "subscriptionId": 1,
+              "date": "2025-13",
+              "usageValue": 10
+            }
+            """;
 
         mockMvc.perform(post("/api/v1/usages")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(invalidJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[*].field").value(hasItem("month")))
-                .andExpect(jsonPath("$.data[?(@.field=='month')].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("date")))
+                .andExpect(jsonPath("$.data[?(@.field=='date')].message").value(hasItem("연/월 형식이 올바르지 않습니다. (예: yyyy-MM)")));
 
         then(usageService).shouldHaveNoInteractions();
     }

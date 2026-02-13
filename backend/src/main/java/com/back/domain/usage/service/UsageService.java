@@ -2,6 +2,7 @@ package com.back.domain.usage.service;
 
 import com.back.domain.category.enums.UsageUnit;
 import com.back.domain.evaluation.entity.SubscriptionEvaluation;
+import com.back.domain.evaluation.policy.EvaluationPolicy;
 import com.back.domain.evaluation.repository.SubscriptionEvaluationRepository;
 import com.back.domain.subscription.entity.Subscription;
 import com.back.domain.subscription.repository.SubscriptionRepository;
@@ -24,6 +25,9 @@ public class UsageService {
     private final SubscriptionUsageRepository usageRepository;
     private final SubscriptionEvaluationRepository evaluationRepository;
     private final SubscriptionRepository subscriptionRepository;
+
+    // 기본 정책 주입 (나중에 카테고리별 정책 매니저를 두어 동적으로 바꿀 수도 있음)
+    private final EvaluationPolicy evaluationPolicy;
 
     @Transactional
     public void recordUsageAndEvaluate(UsageRequest request) {
@@ -63,7 +67,7 @@ public class UsageService {
                 evaluationRepository.findBySubscriptionAndEvalMonth(subscription, request.date())
                         .orElseGet(() -> new SubscriptionEvaluation(subscription, request.date()));
 
-        evaluation.update(request.usageValue());
+        evaluation.update(request.usageValue(), evaluationPolicy);
 
         try {
             evaluationRepository.saveAndFlush(evaluation);
@@ -71,7 +75,7 @@ public class UsageService {
             SubscriptionEvaluation existing = evaluationRepository.findBySubscriptionAndEvalMonth(subscription, request.date())
                     .orElseThrow(() -> e);
 
-            existing.update(request.usageValue());
+            existing.update(request.usageValue(), evaluationPolicy);
             evaluationRepository.save(existing);
         }
     }
