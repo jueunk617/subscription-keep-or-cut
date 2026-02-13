@@ -13,9 +13,9 @@
 
 ## 🚀 로컬 실행
 
-### 1. 레포지토리 클론
+### 1. (터미널/cmd에서) 깃허브 레포지토리 클론
 ```bash
-git clone [repository-url]
+git clone https://github.com/jueunk617/subscription-keep-or-cut.git
 cd subscription-keep-or-cut
 ```
 
