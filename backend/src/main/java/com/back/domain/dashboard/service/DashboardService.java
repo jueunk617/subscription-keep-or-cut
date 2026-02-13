@@ -19,6 +19,12 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardResponse getMonthlyDashboard(int year, int month) {
 
+        /**
+         * [정책]
+         * 해당 월에 평가 (SubscriptionEvaluation)가 존재하는 구독만 대시보드에 포함한다.
+         * 사용량 미입력 구독은 분석 대상에서 제외한다.
+         */
+
         // 1. 해당 월의 모든 평가 데이터 조회
         List<SubscriptionEvaluation> evaluations = evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month);
 

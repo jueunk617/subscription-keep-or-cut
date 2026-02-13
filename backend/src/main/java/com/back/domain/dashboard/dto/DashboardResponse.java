@@ -4,8 +4,8 @@ import com.back.domain.evaluation.enums.EvaluationStatus;
 import java.util.List;
 
 public record DashboardResponse(
-        long totalMonthlyCost,          // 이번 달 평가된 구독 총액
-        int totalAnnualWasteEstimate,  // 이번 달 기준 연간 예상 낭비액 합계
+        long totalMonthlyCost,          // 해당 월 "평가된 구독" 기준 월 환산 사용자 부담금 합계
+        int totalAnnualWasteEstimate,  // 해당 월 평가된 구독 기준 연간 낭비 추정 합계
         List<SubscriptionSummary> subscriptions
 ) {
     public record SubscriptionSummary(
