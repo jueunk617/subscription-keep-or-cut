@@ -23,7 +23,8 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -76,7 +77,8 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.code").value("SUCCESS_200"))
                 .andExpect(jsonPath("$.message").value("구독이 성공적으로 등록되었습니다."))
                 .andExpect(jsonPath("$.data.id").value(10L))
-                .andExpect(jsonPath("$.data.name").value("Netflix"));
+                .andExpect(jsonPath("$.data.name").value("Netflix"))
+                .andExpect(jsonPath("$.data.monthlyShareCost").value(5000));
 
         verify(subscriptionService).createSubscription(any());
     }
@@ -104,7 +106,8 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.code").value("SUCCESS_200"))
                 .andExpect(jsonPath("$.message").value("구독 목록 조회 성공"))
                 .andExpect(jsonPath("$.data[0].id").value(1L))
-                .andExpect(jsonPath("$.data[0].name").value("Netflix"));
+                .andExpect(jsonPath("$.data[0].name").value("Netflix"))
+                .andExpect(jsonPath("$.data[0].monthlyShareCost").value(5000));
 
         verify(subscriptionService).getAllSubscriptions();
     }
@@ -173,7 +176,7 @@ class SubscriptionControllerTest {
     void t6() throws Exception {
         SubscriptionRequest invalidRequest = new SubscriptionRequest(
                 1L,
-                "",   // 빈 이름
+                "",
                 15000,
                 5000,
                 BillingCycle.MONTHLY,
@@ -190,5 +193,4 @@ class SubscriptionControllerTest {
 
         verify(subscriptionService, never()).createSubscription(any());
     }
-
 }

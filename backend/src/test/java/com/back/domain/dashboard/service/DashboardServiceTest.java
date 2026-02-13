@@ -39,21 +39,22 @@ class DashboardServiceTest {
         int year = 2026;
         int month = 2;
 
-        // Category / Subscription (Netflix)
         Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
         ReflectionTestUtils.setField(ott, "id", 1L);
 
-        Subscription netflix = new Subscription(ott, "Netflix", 17000, BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
+        Subscription netflix = new Subscription(ott, "Netflix",
+                17000, 17000, 17000,
+                BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
         ReflectionTestUtils.setField(netflix, "id", 10L);
 
-        // Category / Subscription (ChatGPT)
         Category aiTool = new Category("AI_TOOL", 12, UsageUnit.DAYS, CategoryType.PRODUCTIVITY);
         ReflectionTestUtils.setField(aiTool, "id", 2L);
 
-        Subscription chatgpt = new Subscription(aiTool, "ChatGPT Plus", 29000, BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
+        Subscription chatgpt = new Subscription(aiTool, "ChatGPT Plus",
+                29000, 29000, 29000,
+                BillingCycle.MONTHLY, SubscriptionStatus.ACTIVE);
         ReflectionTestUtils.setField(chatgpt, "id", 11L);
 
-        // SubscriptionEvaluation 2개 (해당 월 평가)
         SubscriptionEvaluation eval1 = new SubscriptionEvaluation(netflix, year, month);
         ReflectionTestUtils.setField(eval1, "efficiencyRate", 50.0);
         ReflectionTestUtils.setField(eval1, "status", EvaluationStatus.REVIEW);
@@ -71,7 +72,7 @@ class DashboardServiceTest {
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(17000 + 29000); // 평가된 구독 기준 합산
+        assertThat(response.totalMonthlyCost()).isEqualTo(17000 + 29000);
         assertThat(response.totalAnnualWasteEstimate()).isEqualTo(102000);
 
         assertThat(response.subscriptions()).hasSize(2);
@@ -99,7 +100,7 @@ class DashboardServiceTest {
         DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
 
         // then
-        assertThat(response.totalMonthlyCost()).isEqualTo(0);           // 평가된 구독이 없으니 0
+        assertThat(response.totalMonthlyCost()).isEqualTo(0);
         assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0);
         assertThat(response.subscriptions()).isEmpty();
     }

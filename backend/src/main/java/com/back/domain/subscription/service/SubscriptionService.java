@@ -32,20 +32,21 @@ public class SubscriptionService {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // 2. 가상 월 비용 계산
-        int virtualMonthlyCost = calculateVirtualMonthlyCost(request.userShareCost(), request.billingCycle());
+        // 2. 결제 주기에 따른 월 환산 사용자 부담금 계산
+        int monthlyShareCost = calculateMonthlyShareCost(request.userShareCost(), request.billingCycle());
 
-        // 3. 엔티티 생성 및 저장
+        // 3. 엔티티 생성 및 저장 (원본 비용도 함께 저장)
         Subscription subscription = new Subscription(
                 category,
                 request.name(),
-                virtualMonthlyCost,
+                request.totalCost(),
+                request.userShareCost(),
+                monthlyShareCost,
                 request.billingCycle(),
                 request.status()
         );
 
         Subscription saved = subscriptionRepository.save(subscription);
-
         return toResponse(saved);
     }
 
@@ -64,7 +65,6 @@ public class SubscriptionService {
      */
     @Transactional
     public void deleteSubscription(Long id) {
-        // 존재 여부 확인 후 삭제
         if (!subscriptionRepository.existsById(id)) {
             throw new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND);
         }
@@ -77,18 +77,18 @@ public class SubscriptionService {
                 s.getId(),
                 s.getCategory().getName(),
                 s.getName(),
-                s.getVirtualMonthlyCost(),
+                s.getMonthlyShareCost(),
                 s.getBillingCycle(),
                 s.getStatus()
         );
     }
 
-    // 결제 주기에 따른 환산 로직
-    private int calculateVirtualMonthlyCost(int shareCost, BillingCycle cycle) {
+    // 결제 주기에 따른 월 환산 사용자 부담금 계산
+    private int calculateMonthlyShareCost(int userShareCost, BillingCycle cycle) {
         return switch (cycle) {
-            case ANNUAL -> shareCost / 12;
-            case QUARTERLY -> shareCost / 3;
-            case MONTHLY -> shareCost;
+            case ANNUAL -> userShareCost / 12;
+            case QUARTERLY -> userShareCost / 3;
+            case MONTHLY -> userShareCost;
         };
     }
 }

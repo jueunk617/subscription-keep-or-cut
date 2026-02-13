@@ -78,7 +78,7 @@ class SubscriptionServiceTest {
         // then
         assertThat(response.id()).isEqualTo(10L);
         assertThat(response.name()).isEqualTo("Netflix");
-        assertThat(response.virtualMonthlyCost()).isEqualTo(5000);
+        assertThat(response.monthlyShareCost()).isEqualTo(5000);
         assertThat(response.billingCycle()).isEqualTo(BillingCycle.MONTHLY);
         assertThat(response.status()).isEqualTo(SubscriptionStatus.ACTIVE);
 
@@ -86,7 +86,7 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    @DisplayName("연간 결제의 경우")
+    @DisplayName("연간 결제의 경우 월 환산 사용자 부담금 계산")
     void t2() {
         // given
         Category category = new Category(
@@ -117,7 +117,7 @@ class SubscriptionServiceTest {
         SubscriptionResponse response = subscriptionService.createSubscription(request);
 
         // then
-        assertThat(response.virtualMonthlyCost()).isEqualTo(10000);
+        assertThat(response.monthlyShareCost()).isEqualTo(10000);
     }
 
     @Test

@@ -27,7 +27,7 @@ public class DashboardService {
                 .mapToLong(e -> {
                     var s = e.getSubscription();
                     // TRIAL은 비용 0으로 처리 (MVP 기준)
-                    return s.getStatus() == SubscriptionStatus.TRIAL ? 0L : s.getVirtualMonthlyCost();
+                    return s.getStatus() == SubscriptionStatus.TRIAL ? 0L : s.getMonthlyShareCost();
                 })
                 .sum();
 

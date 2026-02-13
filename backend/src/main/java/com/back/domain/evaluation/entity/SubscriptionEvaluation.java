@@ -51,7 +51,7 @@ public class SubscriptionEvaluation {
 
         int referenceValue = subscription.getCategory().getReferenceValue();
         CategoryType type = subscription.getCategory().getType();
-        int monthlyCost = subscription.getVirtualMonthlyCost();
+        int monthlyCost = subscription.getMonthlyShareCost();
 
         // 1️. 효율 계산
         double rate = 0;

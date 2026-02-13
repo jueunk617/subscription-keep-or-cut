@@ -27,9 +27,17 @@ public class Subscription {
     @Column(nullable = false)
     private String name;
 
-    // 가상 월 비용
+    // 전체 결제 금액 (원가)
     @Column(nullable = false)
-    private int virtualMonthlyCost;
+    private int totalCost;
+
+    // 사용자 부담 금액 (공유 결제 고려)
+    @Column(nullable = false)
+    private int userShareCost;
+
+    // userShareCost를 결제 주기에 따라 월 기준으로 환산한 금액
+    @Column(nullable = false)
+    private int monthlyShareCost;
 
     // 결제 주기
     @Enumerated(EnumType.STRING)
@@ -43,12 +51,16 @@ public class Subscription {
 
     public Subscription(Category category,
                         String name,
-                        int virtualMonthlyCost,
+                        int totalCost,
+                        int userShareCost,
+                        int monthlyShareCost,
                         BillingCycle billingCycle,
                         SubscriptionStatus status) {
         this.category = category;
         this.name = name;
-        this.virtualMonthlyCost = virtualMonthlyCost;
+        this.totalCost = totalCost;
+        this.userShareCost = userShareCost;
+        this.monthlyShareCost = monthlyShareCost;
         this.billingCycle = billingCycle;
         this.status = status;
     }

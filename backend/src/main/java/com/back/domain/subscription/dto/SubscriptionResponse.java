@@ -7,7 +7,7 @@ public record SubscriptionResponse(
         Long id,
         String categoryName,
         String name,
-        int virtualMonthlyCost,
+        int monthlyShareCost,
         BillingCycle billingCycle,
         SubscriptionStatus status
 ) {}

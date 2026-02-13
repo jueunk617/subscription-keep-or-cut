@@ -55,17 +55,14 @@ class UsageServiceTest {
         Subscription subscription = new Subscription(
                 category,
                 "Netflix",
-                15000,
+                15000, // totalCost
+                15000, // userShareCost
+                15000, // monthlyShareCost
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
 
-        UsageRequest request = new UsageRequest(
-                1L,
-                year,
-                month,
-                100
-        );
+        UsageRequest request = new UsageRequest(1L, year, month, 100);
 
         given(subscriptionRepository.findById(1L))
                 .willReturn(Optional.of(subscription));
@@ -76,7 +73,6 @@ class UsageServiceTest {
         given(evaluationRepository.findBySubscriptionAndYearAndMonth(subscription, year, month))
                 .willReturn(Optional.empty());
 
-        // saveAndFlush가 void가 아니라 엔티티 반환일 수 있으므로 안전하게 반환 스텁
         given(usageRepository.saveAndFlush(any(SubscriptionUsage.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -103,20 +99,14 @@ class UsageServiceTest {
         Subscription subscription = new Subscription(
                 category,
                 "Netflix",
-                15000,
+                15000, 15000, 15000,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
 
-        SubscriptionUsage existingUsage =
-                new SubscriptionUsage(subscription, year, month, 5);
+        SubscriptionUsage existingUsage = new SubscriptionUsage(subscription, year, month, 5);
 
-        UsageRequest request = new UsageRequest(
-                1L,
-                year,
-                month,
-                20
-        );
+        UsageRequest request = new UsageRequest(1L, year, month, 20);
 
         given(subscriptionRepository.findById(1L))
                 .willReturn(Optional.of(subscription));
@@ -138,8 +128,6 @@ class UsageServiceTest {
 
         // then
         assertEquals(20, existingUsage.getUsageValue());
-
-        // 기존 엔티티를 saveAndFlush로 저장하는 흐름
         verify(usageRepository).saveAndFlush(existingUsage);
         verify(evaluationRepository).saveAndFlush(any(SubscriptionEvaluation.class));
     }

@@ -17,7 +17,7 @@ class SubscriptionEvaluationTest {
     private Subscription createNetflixSubscription() {
         Category ott = new Category(
                 "OTT",
-                1200,                     // 월 1200분 기준 (하루 40분 × 30일)
+                1200,
                 UsageUnit.MINUTES,
                 CategoryType.CONTENT
         );
@@ -25,7 +25,9 @@ class SubscriptionEvaluationTest {
         return new Subscription(
                 ott,
                 "Netflix",
-                17000,
+                17000, // totalCost
+                17000, // userShareCost
+                17000, // monthlyShareCost
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
         );
@@ -34,7 +36,7 @@ class SubscriptionEvaluationTest {
     private Subscription createChatGptSubscription() {
         Category aiTool = new Category(
                 "AI_TOOL",
-                15,                       // 월 15일 사용 기준
+                15,
                 UsageUnit.DAYS,
                 CategoryType.PRODUCTIVITY
         );
@@ -42,6 +44,8 @@ class SubscriptionEvaluationTest {
         return new Subscription(
                 aiTool,
                 "ChatGPT Plus",
+                29000,
+                29000,
                 29000,
                 BillingCycle.MONTHLY,
                 SubscriptionStatus.ACTIVE
