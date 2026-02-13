@@ -3,6 +3,7 @@ package com.back.domain.evaluation.entity;
 import com.back.domain.category.enums.CategoryType;
 import com.back.domain.evaluation.enums.EvaluationStatus;
 import com.back.domain.subscription.entity.Subscription;
+import com.back.domain.subscription.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,10 +28,10 @@ public class SubscriptionEvaluation {
     @JoinColumn(name = "subscription_id", nullable = false)
     private Subscription subscription;
 
-    @Column(name = "eval_year")
+    @Column(name = "eval_year", nullable = false)
     private int year;
 
-    @Column(name = "eval_month")
+    @Column(name = "eval_month", nullable = false)
     private int month;
 
     private double efficiencyRate;
@@ -81,6 +82,12 @@ public class SubscriptionEvaluation {
         }
 
         // 3️. 연간 낭비 계산
+        // - TRIAL 정책 반영
+        if (subscription.getStatus() == SubscriptionStatus.TRIAL) {
+            this.annualWaste = 0;
+            return;
+        }
+
         if (rate >= 100) {
             this.annualWaste = 0;
         } else {

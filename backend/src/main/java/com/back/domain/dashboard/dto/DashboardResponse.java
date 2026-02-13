@@ -14,6 +14,8 @@ public record DashboardResponse(
             String name,
             double efficiencyRate,
             EvaluationStatus status,
-            long annualWaste
+            long annualWaste,
+            boolean trial,
+            long potentialAnnualWaste
     ) {}
 }

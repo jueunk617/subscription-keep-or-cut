@@ -96,6 +96,21 @@ class DashboardServiceTest {
         assertThat(s1.efficiencyRate()).isEqualTo(50.0);
         assertThat(s1.status()).isEqualTo(EvaluationStatus.REVIEW);
         assertThat(s1.annualWaste()).isEqualTo(102000L);
+
+        // ACTIVE는 potential 0
+        assertThat(s1.trial()).isFalse();
+        assertThat(s1.potentialAnnualWaste()).isEqualTo(0L);
+
+        DashboardResponse.SubscriptionSummary s2 = response.subscriptions().get(1);
+        assertThat(s2.id()).isEqualTo(11L);
+        assertThat(s2.categoryName()).isEqualTo("AI_TOOL");
+        assertThat(s2.name()).isEqualTo("ChatGPT Plus");
+        assertThat(s2.efficiencyRate()).isEqualTo(100.0);
+        assertThat(s2.status()).isEqualTo(EvaluationStatus.EFFICIENT);
+        assertThat(s2.annualWaste()).isEqualTo(0L);
+
+        assertThat(s2.trial()).isFalse();
+        assertThat(s2.potentialAnnualWaste()).isEqualTo(0L);
     }
 
     @Test
@@ -115,5 +130,57 @@ class DashboardServiceTest {
         assertThat(response.totalMonthlyCost()).isEqualTo(0L);
         assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0L);
         assertThat(response.subscriptions()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TRIAL 구독은 월 비용/연간 낭비는 0이지만 잠재 낭비(potentialAnnualWaste)는 계산된다")
+    void t3() {
+        // given
+        int year = 2026;
+        int month = 2;
+
+        Category ott = new Category("OTT", 1800, UsageUnit.MINUTES, CategoryType.CONTENT);
+        ReflectionTestUtils.setField(ott, "id", 1L);
+
+        Subscription netflixTrial = new Subscription(
+                ott,
+                "Netflix Trial",
+                17000L,
+                17000L,
+                17000L, // 유료 전환 시 월 기준 비용
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.TRIAL
+        );
+        ReflectionTestUtils.setField(netflixTrial, "id", 10L);
+
+        SubscriptionEvaluation eval = new SubscriptionEvaluation(netflixTrial, year, month);
+        ReflectionTestUtils.setField(eval, "efficiencyRate", 50.0);
+        ReflectionTestUtils.setField(eval, "status", EvaluationStatus.REVIEW);
+        ReflectionTestUtils.setField(eval, "annualWaste", 0L); // TRIAL 정책에 의해 실제 낭비는 0
+
+        given(evaluationRepository.findAllWithSubscriptionAndCategoryByYearAndMonth(year, month))
+                .willReturn(List.of(eval));
+
+        // when
+        DashboardResponse response = dashboardService.getMonthlyDashboard(year, month);
+
+        // then
+        assertThat(response.totalMonthlyCost()).isEqualTo(0L);
+        assertThat(response.totalAnnualWasteEstimate()).isEqualTo(0L);
+
+        assertThat(response.subscriptions()).hasSize(1);
+
+        DashboardResponse.SubscriptionSummary s = response.subscriptions().get(0);
+        assertThat(s.id()).isEqualTo(10L);
+        assertThat(s.categoryName()).isEqualTo("OTT");
+        assertThat(s.name()).isEqualTo("Netflix Trial");
+        assertThat(s.efficiencyRate()).isEqualTo(50.0);
+        assertThat(s.status()).isEqualTo(EvaluationStatus.REVIEW);
+        assertThat(s.annualWaste()).isEqualTo(0L);
+
+        assertThat(s.trial()).isTrue();
+
+        // 잠재 낭비: 17000 * (1 - 0.5) * 12 = 102000
+        assertThat(s.potentialAnnualWaste()).isEqualTo(102000L);
     }
 }

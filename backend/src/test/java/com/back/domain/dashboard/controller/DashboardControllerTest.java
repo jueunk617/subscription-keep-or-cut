@@ -48,7 +48,9 @@ class DashboardControllerTest {
                                 "Netflix",
                                 50.0,
                                 EvaluationStatus.REVIEW,
-                                102000L
+                                102000L,
+                                false,
+                                0L         // potentialAnnualWaste (ACTIVE면 0)
                         )
                 )
         );
@@ -68,7 +70,9 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.message").value(year + "년 " + month + "월 대시보드 조회 성공"))
                 .andExpect(jsonPath("$.data.totalMonthlyCost").value(46000))
                 .andExpect(jsonPath("$.data.totalAnnualWasteEstimate").value(102000))
-                .andExpect(jsonPath("$.data.subscriptions.length()").value(1));
+                .andExpect(jsonPath("$.data.subscriptions.length()").value(1))
+                .andExpect(jsonPath("$.data.subscriptions[0].trial").value(false))
+                .andExpect(jsonPath("$.data.subscriptions[0].potentialAnnualWaste").value(0));
     }
 
     @Test

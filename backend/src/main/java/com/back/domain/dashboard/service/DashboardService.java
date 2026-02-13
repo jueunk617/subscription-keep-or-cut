@@ -30,10 +30,7 @@ public class DashboardService {
 
         // 2. 이번 달 평가된 구독의 월 지출 합계
         long totalMonthlyCost = evaluations.stream()
-                .mapToLong(e -> {
-                    var s = e.getSubscription();
-                    return s.getStatus() == SubscriptionStatus.TRIAL ? 0L : s.getMonthlyShareCost();
-                })
+                .mapToLong(e -> e.getSubscription().getStatus() == SubscriptionStatus.TRIAL ? 0L : e.getSubscription().getMonthlyShareCost())
                 .sum();
 
         // 3. 전체 연간 낭비 예상액 합계
@@ -43,15 +40,33 @@ public class DashboardService {
 
         // 4. 구독별 요약 리스트 생성
         List<DashboardResponse.SubscriptionSummary> summaries = evaluations.stream()
-                .map(e -> new DashboardResponse.SubscriptionSummary(
-                        e.getSubscription().getId(),
-                        e.getSubscription().getCategory().getName(),
-                        e.getSubscription().getName(),
-                        e.getEfficiencyRate(),
-                        e.getStatus(),
-                        e.getAnnualWaste()
-                )).toList();
+                .map(e -> {
+                    var s = e.getSubscription();
+                    boolean isTrial = s.getStatus() == SubscriptionStatus.TRIAL;
+
+                    long potentialAnnualWaste = isTrial
+                            ? calcPotentialAnnualWaste(s.getMonthlyShareCost(), e.getEfficiencyRate())
+                            : 0L;
+
+                    return new DashboardResponse.SubscriptionSummary(
+                            s.getId(),
+                            s.getCategory().getName(),
+                            s.getName(),
+                            e.getEfficiencyRate(),
+                            e.getStatus(),
+                            e.getAnnualWaste(),
+                            isTrial,
+                            potentialAnnualWaste
+                    );
+                })
+                .toList();
 
         return new DashboardResponse(totalMonthlyCost, totalWaste, summaries);
+    }
+
+    private long calcPotentialAnnualWaste(long monthlyCost, double rate) {
+        if (rate >= 100) return 0L;
+        // TRIAL이어도 유료 전환 시 기준으로 계산되니까 한 달 뒤 위험을 잡아줌
+        return (long) (monthlyCost * (1 - rate / 100) * 12);
     }
 }
