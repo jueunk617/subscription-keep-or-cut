@@ -78,17 +78,29 @@ npm run dev
 
 ## 📝프로젝트 구조
 ```
-src/
-├── main/
-│   ├── java/com/subasset/
-│   │   ├── domain/          # 도메인 엔티티
-│   │   ├── repository/      # 데이터 접근 계층
-│   │   ├── service/         # 비즈니스 로직
-│   │   ├── controller/      # API 컨트롤러
-│   │   ├── dto/             # 요청/응답 DTO
-│   │   └── global/          # 공통 설정 및 예외 처리
-│   └── resources/
-│       ├── application.yml
-│       └── data.sql         # 초기 카테고리 데이터
-└── test/                    # 테스트 코드
+src
+├── main
+│   ├── java
+│   │   └── com.back
+│   │       ├── domain
+│   │       │   ├── category
+│   │       │   ├── dashboard
+│   │       │   ├── evaluation
+│   │       │   ├── subscription
+│   │       │   └── usage
+│   │       ├── global
+│   │       │   ├── common
+│   │       │   ├── exception
+│   │       │   └── init
+│   │       └── BackendApplication.java
+│   └── resources
+└── test
+    └── java
+        └── com.back
+            ├── domain
+            │   ├── dashboard
+            │   ├── evaluation.entity
+            │   ├── subscription
+            │   └── usage
+            └── BackendApplicationTests.java
 ```
