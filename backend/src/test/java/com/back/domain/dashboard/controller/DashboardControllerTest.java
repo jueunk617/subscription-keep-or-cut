@@ -76,7 +76,7 @@ class DashboardControllerTest {
     }
 
     @Test
-    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST")
+    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST + fieldErrors 반환")
     void t2() throws Exception {
         mockMvc.perform(get("/api/v1/dashboard")
                         .param("year", "2026")
@@ -86,13 +86,15 @@ class DashboardControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("month"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         then(dashboardService).shouldHaveNoInteractions();
     }
 
     @Test
-    @DisplayName("예외 - year가 정책 범위를 벗어나면 BAD_REQUEST")
+    @DisplayName("예외 - year가 정책 범위를 벗어나면 BAD_REQUEST + fieldErrors 반환")
     void t3() throws Exception {
         mockMvc.perform(get("/api/v1/dashboard")
                         .param("year", "1800")
@@ -102,13 +104,15 @@ class DashboardControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("year"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         then(dashboardService).shouldHaveNoInteractions();
     }
 
     @Test
-    @DisplayName("예외 - 필수 파라미터 month 누락 시 BAD_REQUEST")
+    @DisplayName("예외 - 필수 파라미터 month 누락 시 BAD_REQUEST + fieldErrors 반환")
     void t4() throws Exception {
         mockMvc.perform(get("/api/v1/dashboard")
                         .param("year", "2026")
@@ -117,7 +121,9 @@ class DashboardControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("month"))
+                .andExpect(jsonPath("$.data[0].message").value("필수 파라미터입니다."));
 
         then(dashboardService).shouldHaveNoInteractions();
     }

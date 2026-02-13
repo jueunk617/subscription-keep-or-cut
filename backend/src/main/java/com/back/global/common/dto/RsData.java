@@ -27,4 +27,8 @@ public class RsData<T> {
     public static <T> RsData<T> fail(ErrorCode errorCode, String customMessage) {
         return new RsData<>(false, errorCode.getCode(), customMessage, null);
     }
+
+    public static <T> RsData<T> fail(ErrorCode errorCode, String customMessage, T data) {
+        return new RsData<>(false, errorCode.getCode(), customMessage, data);
+    }
 }

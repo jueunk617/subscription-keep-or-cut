@@ -172,7 +172,7 @@ class SubscriptionControllerTest {
     }
 
     @Test
-    @DisplayName("예외 발생 - name이 빈 값이면 BAD_REQUEST")
+    @DisplayName("예외 발생 - name이 빈 값이면 BAD_REQUEST + fieldErrors 반환")
     void t6() throws Exception {
         SubscriptionRequest invalidRequest = new SubscriptionRequest(
                 1L,
@@ -189,7 +189,9 @@ class SubscriptionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("name"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         verify(subscriptionService, never()).createSubscription(any());
     }

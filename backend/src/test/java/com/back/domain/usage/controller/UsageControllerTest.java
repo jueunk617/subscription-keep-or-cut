@@ -65,7 +65,7 @@ class UsageControllerTest {
     }
 
     @Test
-    @DisplayName("예외 - usageValue가 음수면 BAD_REQUEST")
+    @DisplayName("예외 - usageValue가 음수면 BAD_REQUEST + fieldErrors 반환")
     void t3() throws Exception {
         UsageRequest request = new UsageRequest(1L, 2025, 2, -1);
 
@@ -75,13 +75,15 @@ class UsageControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("usageValue"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
 
     @Test
-    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST")
+    @DisplayName("예외 - month가 1~12 범위를 벗어나면 BAD_REQUEST + fieldErrors 반환")
     void t4() throws Exception {
         UsageRequest request = new UsageRequest(1L, 2025, 13, 10);
 
@@ -91,13 +93,15 @@ class UsageControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                .andExpect(jsonPath("$.data[0].field").value("month"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
 
     @Test
-    @DisplayName("예외 - subscriptionId가 null이면 BAD_REQUEST")
+    @DisplayName("예외 - subscriptionId가 null이면 BAD_REQUEST + fieldErrors 반환")
     void t5() throws Exception {
         String invalidJson = """
                 {
@@ -114,7 +118,10 @@ class UsageControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.BAD_REQUEST.getMessage()));
+                .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
+                // subscriptionId는 @NotNull
+                .andExpect(jsonPath("$.data[0].field").value("subscriptionId"))
+                .andExpect(jsonPath("$.data[0].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
