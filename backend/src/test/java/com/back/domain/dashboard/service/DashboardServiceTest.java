@@ -214,8 +214,10 @@ class DashboardServiceTest {
 
         DashboardResponse.SubscriptionSummary s = response.subscriptions().get(0);
 
+        // trial 정책임을 함께 검증
+        assertThat(s.trial()).isTrue();
+
         // 10001 * (1 - 0.33) * 12 = 80408.04 -> Math.round => 80408
         assertThat(s.potentialAnnualWaste()).isEqualTo(80408L);
     }
-
 }

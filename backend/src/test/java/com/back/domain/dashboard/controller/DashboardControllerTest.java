@@ -16,10 +16,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DashboardController.class)
 @Import(GlobalExceptionHandler.class)
@@ -87,8 +89,8 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("month"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("month")))
+                .andExpect(jsonPath("$.data[?(@.field=='month')].message").exists());
 
         then(dashboardService).shouldHaveNoInteractions();
     }
@@ -105,8 +107,8 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("year"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("year")))
+                .andExpect(jsonPath("$.data[?(@.field=='year')].message").exists());
 
         then(dashboardService).shouldHaveNoInteractions();
     }
@@ -122,8 +124,8 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("month"))
-                .andExpect(jsonPath("$.data[0].message").value("필수 파라미터입니다."));
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("month")))
+                .andExpect(jsonPath("$.data[?(@.field=='month')].message").value(hasItem("필수 파라미터입니다.")));
 
         then(dashboardService).shouldHaveNoInteractions();
     }

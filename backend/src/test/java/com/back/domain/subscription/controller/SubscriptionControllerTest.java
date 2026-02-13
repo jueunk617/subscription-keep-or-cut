@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -115,7 +117,6 @@ class SubscriptionControllerTest {
     @Test
     @DisplayName("구독 삭제 API 성공")
     void t3() throws Exception {
-        // when & then
         mockMvc.perform(delete("/api/v1/subscriptions/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -149,7 +150,7 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.CATEGORY_NOT_FOUND.getCode()))
                 .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_NOT_FOUND.getMessage()))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
 
         verify(subscriptionService).createSubscription(any());
     }
@@ -157,7 +158,6 @@ class SubscriptionControllerTest {
     @Test
     @DisplayName("예외 발생 - 존재하지 않는 구독 삭제")
     void t5() throws Exception {
-
         willThrow(new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
                 .given(subscriptionService)
                 .deleteSubscription(1L);
@@ -166,7 +166,8 @@ class SubscriptionControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage()));
+                .andExpect(jsonPath("$.message").value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage()))
+                .andExpect(jsonPath("$.data").value(nullValue()));
 
         verify(subscriptionService).deleteSubscription(1L);
     }
@@ -190,8 +191,8 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("name"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("name")))
+                .andExpect(jsonPath("$.data[?(@.field=='name')].message").exists());
 
         verify(subscriptionService, never()).createSubscription(any());
     }

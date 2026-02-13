@@ -15,7 +15,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.BDDMockito.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,8 +45,7 @@ class UsageControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message")
-                        .value("사용량이 기록되었으며 효율 분석이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("사용량이 기록되었으며 효율 분석이 완료되었습니다."));
     }
 
     @Test
@@ -60,8 +62,8 @@ class UsageControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code")
-                        .value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getCode()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -76,8 +78,8 @@ class UsageControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("usageValue"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("usageValue")))
+                .andExpect(jsonPath("$.data[?(@.field=='usageValue')].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
@@ -94,8 +96,8 @@ class UsageControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                .andExpect(jsonPath("$.data[0].field").value("month"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("month")))
+                .andExpect(jsonPath("$.data[?(@.field=='month')].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
@@ -119,9 +121,8 @@ class UsageControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(ErrorCode.BAD_REQUEST.getCode()))
                 .andExpect(jsonPath("$.message").value("요청 값 검증에 실패했습니다."))
-                // subscriptionId는 @NotNull
-                .andExpect(jsonPath("$.data[0].field").value("subscriptionId"))
-                .andExpect(jsonPath("$.data[0].message").exists());
+                .andExpect(jsonPath("$.data[*].field").value(hasItem("subscriptionId")))
+                .andExpect(jsonPath("$.data[?(@.field=='subscriptionId')].message").exists());
 
         then(usageService).shouldHaveNoInteractions();
     }
