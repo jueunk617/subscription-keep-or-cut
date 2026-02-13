@@ -56,7 +56,8 @@ public class DashboardService {
                             e.getStatus(),
                             e.getAnnualWaste(),
                             isTrial,
-                            potentialAnnualWaste
+                            potentialAnnualWaste,
+                            e.getCostPerUnit()
                     );
                 })
                 .toList();

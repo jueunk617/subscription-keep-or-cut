@@ -16,6 +16,7 @@ public record DashboardResponse(
             EvaluationStatus status,
             long annualWaste,
             boolean trial,
-            long potentialAnnualWaste
+            long potentialAnnualWaste,
+            long costPerUnit //단위당 실제 비용 필드
     ) {}
 }

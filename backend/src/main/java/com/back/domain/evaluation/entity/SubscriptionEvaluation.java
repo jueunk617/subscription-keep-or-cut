@@ -41,6 +41,10 @@ public class SubscriptionEvaluation {
 
     private long annualWaste;
 
+    private int referenceSnapshotValue;
+
+    private long costPerUnit;
+
     public SubscriptionEvaluation(Subscription subscription, int year, int month) {
         this.subscription = subscription;
         this.year = year;
@@ -49,26 +53,29 @@ public class SubscriptionEvaluation {
 
     // 사용량 기반 평가 수행
     public void evaluate(int usageValue) {
-
-        int referenceValue = subscription.getCategory().getReferenceValue();
+        // 평가 시점의 기준값을 스냅샷으로 저장하여 이력 관리 보장
+        this.referenceSnapshotValue = subscription.getCategory().getReferenceValue();
         CategoryType type = subscription.getCategory().getType();
-
         long monthlyCost = subscription.getMonthlyShareCost();
 
-        // 1️. 효율 계산
+        // 1. 효율 계산
         double rate = 0;
-
-        if (referenceValue > 0) {
-            rate = (double) usageValue / referenceValue * 100;
-
+        if (this.referenceSnapshotValue > 0) {
+            rate = (double) usageValue / this.referenceSnapshotValue * 100;
             if (type == CategoryType.PRODUCTIVITY) {
                 rate = Math.min(rate, 100);
             }
         }
-
         this.efficiencyRate = rate;
 
-        // 2️. 상태 계산
+        // 2. 단위당 비용 계산
+        if (usageValue > 0) {
+            this.costPerUnit = Math.round((double) monthlyCost / usageValue);
+        } else {
+            this.costPerUnit = monthlyCost; // 사용량이 0이면 한 달 비용 전체가 낭비 단가
+        }
+
+        // 3. 상태 계산
         if (usageValue == 0) {
             this.status = EvaluationStatus.GHOST;
         } else if (rate >= 100) {
@@ -81,8 +88,7 @@ public class SubscriptionEvaluation {
             this.status = EvaluationStatus.INEFFICIENT;
         }
 
-        // 3️. 연간 낭비 계산
-        // - TRIAL 정책 반영
+        // 4. 연간 낭비 계산 (TRIAL 정책 반영)
         if (subscription.getStatus() == SubscriptionStatus.TRIAL) {
             this.annualWaste = 0;
             return;
@@ -91,7 +97,6 @@ public class SubscriptionEvaluation {
         if (rate >= 100) {
             this.annualWaste = 0;
         } else {
-            // 계산 정책 통일 = 원 단위 대표값 산출을 위해 반올림 적용
             this.annualWaste = Math.round(monthlyCost * (1 - rate / 100) * 12);
         }
     }

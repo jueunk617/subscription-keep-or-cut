@@ -63,6 +63,9 @@ class SubscriptionEvaluationTest {
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.GHOST);
         assertThat(evaluation.getAnnualWaste()).isEqualTo(17000L * 12);
+
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(1200);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(17000L);
     }
 
     @Test
@@ -77,6 +80,9 @@ class SubscriptionEvaluationTest {
         assertThat(evaluation.getEfficiencyRate()).isEqualTo(100.0);
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.EFFICIENT);
         assertThat(evaluation.getAnnualWaste()).isEqualTo(0L);
+
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(1200);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(14L);
     }
 
     @Test
@@ -89,6 +95,8 @@ class SubscriptionEvaluationTest {
         evaluation.evaluate(600); // 50%
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.REVIEW);
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(1200);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(28L); // 17000/600=28.33.. -> 28
     }
 
     @Test
@@ -102,6 +110,9 @@ class SubscriptionEvaluationTest {
 
         assertThat(evaluation.getEfficiencyRate()).isEqualTo(100.0);
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.EFFICIENT);
+
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(15);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(967L); // 29000/30=966.6.. -> 967
     }
 
     @Test
@@ -114,6 +125,9 @@ class SubscriptionEvaluationTest {
         evaluation.evaluate(5); // 약 33%
 
         assertThat(evaluation.getStatus()).isEqualTo(EvaluationStatus.INEFFICIENT);
+
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(15);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(5800L); // 29000/5
     }
 
     @Test
@@ -144,6 +158,8 @@ class SubscriptionEvaluationTest {
 
         // 기대값: 10000 (반올림)
         assertThat(evaluation.getAnnualWaste()).isEqualTo(10000L);
+        assertThat(evaluation.getReferenceSnapshotValue()).isEqualTo(6);
+        assertThat(evaluation.getCostPerUnit()).isEqualTo(1000L);
     }
 
 }

@@ -47,7 +47,7 @@ class SubscriptionServiceTest {
         Category category = new Category(
                 "OTT",
                 1,
-                UsageUnit.DAYS,
+                UsageUnit.MINUTES,
                 CategoryType.CONTENT
         );
 
@@ -92,7 +92,7 @@ class SubscriptionServiceTest {
         Category category = new Category(
                 "OTT",
                 1,
-                UsageUnit.DAYS,
+                UsageUnit.MINUTES,
                 CategoryType.CONTENT
         );
 
@@ -172,7 +172,7 @@ class SubscriptionServiceTest {
     @Test
     @DisplayName("연간 결제 월 환산은 반올림 처리한다")
     void t6() {
-        Category category = new Category("OTT", 1, UsageUnit.DAYS, CategoryType.CONTENT);
+        Category category = new Category("OTT", 1, UsageUnit.MINUTES, CategoryType.CONTENT);
         ReflectionTestUtils.setField(category, "id", 1L);
 
         SubscriptionRequest request = new SubscriptionRequest(

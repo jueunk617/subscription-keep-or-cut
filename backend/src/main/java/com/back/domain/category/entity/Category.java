@@ -32,9 +32,19 @@ public class Category {
     private CategoryType type;
 
     public Category(String name, int referenceValue, UsageUnit unit, CategoryType type) {
+        validateUnitWithType(type, unit);
         this.name = name;
         this.referenceValue = referenceValue;
         this.unit = unit;
         this.type = type;
+    }
+
+    private void validateUnitWithType(CategoryType type, UsageUnit unit) {
+        if (type == CategoryType.CONTENT && unit != UsageUnit.MINUTES) {
+            throw new IllegalArgumentException("콘텐츠 소비형 카테고리는 반드시 '분(MINUTES)' 단위여야 합니다.");
+        }
+        if (type == CategoryType.PRODUCTIVITY && unit != UsageUnit.DAYS) {
+            throw new IllegalArgumentException("생산성 도구형 카테고리는 반드시 '일(DAYS)' 단위여야 합니다.");
+        }
     }
 }

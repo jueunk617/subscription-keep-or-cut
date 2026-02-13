@@ -52,7 +52,8 @@ class DashboardControllerTest {
                                 EvaluationStatus.REVIEW,
                                 102000L,
                                 false,
-                                0L         // potentialAnnualWaste (ACTIVE면 0)
+                                0L, // potentialAnnualWaste (ACTIVE면 0)
+                                500L // costPerUnit 추가
                         )
                 )
         );
